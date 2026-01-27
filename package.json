@@ -32,8 +32,10 @@
     "@angular/platform-server": "^21.1.0",
     "@angular/router": "^21.1.0",
     "@angular/ssr": "^21.1.0",
+    "@shopify/storefront-api-client": "^1.0.9",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
+    "shopify-buy": "^3.0.7",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
