@@ -2,13 +2,16 @@
   <h1>My Angular Shopify Store</h1>
   <div class="product-grid">
     <div *ngFor="let product of products" class="product-card">
-      <img [src]="product.images.edges[0]?.node.url" [alt]="product.title" width="200">
+      <img
+        [src]="product.images.edges[0]?.node.url"
+        [alt]="product.title"
+        [title]="product.title"
+        width="200"
+      />
       <h3>{{ product.title }}</h3>
       <p>{{ product.description }}</p>
-      
-      <button (click)="handleAddToCart(product.variants.edges[0].node.id)">
-        Add to Cart
-      </button>
+
+      <button (click)="handleAddToCart(product.variants.edges[0].node.id)">Add to Cart</button>
     </div>
   </div>
 </div>
