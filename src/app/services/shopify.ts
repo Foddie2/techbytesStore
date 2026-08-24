@@ -8,11 +8,11 @@ import { environment } from '../../environments/environment';
 export class ShopifyService {
   private client = createStorefrontApiClient({
     storeDomain: environment.shopifyDomain,
-    apiVersion: environment.apiVersion,
+    apiVersion: environment.apiVersion || '2026-01',
     publicAccessToken: environment.shopifyToken,
   });
 
-async getProducts() {
+  async getProducts() {
     const productQuery = `
       query getProducts {
         products(first: 10) {
@@ -28,10 +28,14 @@ async getProducts() {
                   }
                 }
               }
-              variants(first: 1) { # FIX: Added this to provide IDs for the cart
+              variants(first: 1) {
                 edges {
                   node {
                     id
+                    price {
+                      amount
+                      currencyCode
+                    }
                   }
                 }
               }
@@ -41,62 +45,97 @@ async getProducts() {
       }
     `;
 
-    const { data, errors } = await this.client.request(productQuery);
+    try {
+      const { data, errors } = await this.client.request(productQuery);
+      if (errors) {
+        console.error('Shopify GraphQL Errors:', errors);
+        throw errors;
+      }
+      return data?.products?.edges?.map((edge: any) => edge.node) || [];
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      throw error;
+    }
+  }
+
+  async createCart(variantId: string) {
+    const mutation = `
+      mutation cartCreate($input: CartInput) {
+        cartCreate(input: $input) {
+          cart {
+            id
+            checkoutUrl
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      input: {
+        lines: [{ quantity: 1, merchandiseId: variantId }],
+      },
+    };
+
+    const { data, errors }: any = await this.client.request(mutation, { variables });
     if (errors) throw errors;
-    return data.products.edges.map((edge: any) => edge.node);
+
+    const cart = data?.cartCreate?.cart;
+    if (cart?.id) {
+      localStorage.setItem('cart_id', cart.id);
+    }
+    return cart;
   }
 
-  //"Add to Cart" functionality using Shopify's Checkout API
-  // Add these to your ShopifyService class
+  async addToCart(variantId: string) {
+    const cartId = localStorage.getItem('cart_id');
 
-async createCart(variantId: string) {
-  const mutation = `
-    mutation cartCreate($input: CartInput) {
-      cartCreate(input: $input) {
-        cart {
-          id
-          checkoutUrl
+    // If no cart exists, create one
+    if (!cartId) {
+      return this.createCart(variantId);
+    }
+
+    const mutation = `
+      mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+        cartLinesAdd(cartId: $cartId, lines: $lines) {
+          cart {
+            id
+            checkoutUrl
+          }
+          userErrors {
+            field
+            message
+          }
         }
       }
+    `;
+
+    const variables = {
+      cartId,
+      lines: [{ quantity: 1, merchandiseId: variantId }],
+    };
+
+    try {
+      const { data, errors }: any = await this.client.request(mutation, { variables });
+
+      // If the cart ID in localStorage expired or became invalid, reset and recreate
+      if (errors || !data?.cartLinesAdd?.cart) {
+        localStorage.removeItem('cart_id');
+        return this.createCart(variantId);
+      }
+
+      return data.cartLinesAdd.cart;
+    } catch (err) {
+      localStorage.removeItem('cart_id');
+      return this.createCart(variantId);
     }
-  `;
-
-  const variables = {
-    input: {
-      lines: [{ quantity: 1, merchandiseId: variantId }]
-    }
-  };
-
-  const { data }: any = await this.client.request(mutation, { variables });
-  localStorage.setItem('cart_id', data.cartCreate.cart.id);
-  return data.cartCreate.cart;
-}
-
-async addToCart(variantId: string) {
-  const cartId = localStorage.getItem('cart_id');
-
-  // If no cart exists, create one
-  if (!cartId) {
-    return this.createCart(variantId);
   }
 
-  const mutation = `
-    mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
-      cartLinesAdd(cartId: $cartId, lines: $lines) {
-        cart {
-          id
-          checkoutUrl
-        }
-      }
-    }
-  `;
-
-  const variables = {
-    cartId,
-    lines: [{ quantity: 1, merchandiseId: variantId }]
-  };
-
-  const { data }: any = await this.client.request(mutation, { variables });
-  return data.cartLinesAdd.cart;
-}
+  constructor() {
+    console.log('Domain:', environment.shopifyDomain);
+    console.log('Token:', environment.shopifyToken);
+  }
 }

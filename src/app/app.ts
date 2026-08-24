@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // FIX: Required for *ngFor and property binding
-import { ShopifyService } from './services/shopify'; // FIX: Correct filename is 'shopify', not 'shopify.service'
+import { CommonModule } from '@angular/common';
+import { ShopifyService } from './services/shopify';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [CommonModule], // FIX: Add CommonModule here
+  imports: [CommonModule],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss']
+  styleUrls: ['./app.scss'],
 })
 export class AppComponent implements OnInit {
   products: any[] = [];
+  cartCount: number = 0;
 
   constructor(private shopifyService: ShopifyService) {}
 
@@ -25,9 +26,9 @@ export class AppComponent implements OnInit {
   async handleAddToCart(variantId: string) {
     try {
       const cart = await this.shopifyService.addToCart(variantId);
+      this.cartCount++;
       console.log('Item added! Checkout here:', cart.checkoutUrl);
       alert('Added to cart!');
-      // window.location.href = cart.checkoutUrl; // Uncomment to redirect to checkout
     } catch (error) {
       console.error('Cart error:', error);
     }

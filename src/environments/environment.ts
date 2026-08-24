@@ -1,9 +1,6 @@
 export const environment = {
   production: false,
   shopifyDomain: 'techbytesstore.myshopify.com',
-  shopifyToken: 'df8e775397c0cee920054d90cca51447',
+  shopifyToken: 'YOUR_PUBLIC_STOREFRONT_TOKEN', // Do NOT put 'shpss_' keys here
   apiVersion: '2026-01',
 };
-
-
-
