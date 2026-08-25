@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-navbar',
@@ -6,7 +6,7 @@ import { Component, input } from '@angular/core';
   template: `
     <nav class="navbar">
       <div class="brand">TechBytes Store</div>
-      <div class="cart-badge">🛒 Cart ({{ cartCount() }})</div>
+      <div class="cart-badge">🛒 Cart ({{ cartCount }})</div>
     </nav>
   `,
   styles: [
@@ -33,6 +33,5 @@ import { Component, input } from '@angular/core';
   ],
 })
 export class Navbar {
-  // Modern Angular input signal
-  cartCount = input<number>(0);
+  @Input() cartCount: number = 0;
 }

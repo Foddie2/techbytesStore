@@ -1,11 +1,9 @@
-import { Component, OnInit, output, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, EventEmitter, Output, inject } from '@angular/core';
 import { ShopifyService } from '../services/shopify';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule],
   template: `
     <div class="product-grid">
       @for (product of products; track product.id) {
@@ -15,9 +13,10 @@ import { ShopifyService } from '../services/shopify';
           }
           <h3>{{ product.title }}</h3>
           <p>{{ product.description }}</p>
-
           <button (click)="addToCart(product.variants?.edges?.[0]?.node?.id)">Add to Cart</button>
         </div>
+      } @empty {
+        <p>No active products found.</p>
       }
     </div>
   `,
@@ -27,7 +26,7 @@ import { ShopifyService } from '../services/shopify';
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 1.5rem;
-        padding: 2rem 0;
+        padding: 1.5rem 0;
       }
       .product-card {
         border: 1px solid #e5e7eb;
@@ -35,9 +34,10 @@ import { ShopifyService } from '../services/shopify';
         padding: 1rem;
         text-align: center;
         img {
-          max-width: 100%;
+          width: 100%;
           height: 200px;
           object-fit: cover;
+          border-radius: 4px;
         }
         button {
           background: #10b981;
@@ -46,6 +46,7 @@ import { ShopifyService } from '../services/shopify';
           padding: 0.5rem 1rem;
           border-radius: 4px;
           cursor: pointer;
+          margin-top: 0.5rem;
         }
       }
     `,
@@ -55,13 +56,13 @@ export class ProductList implements OnInit {
   private shopifyService = inject(ShopifyService);
 
   products: any[] = [];
-  onCartUpdated = output<void>(); // Modern output emitter
+  @Output() onCartUpdated = new EventEmitter<void>();
 
   async ngOnInit() {
     try {
       this.products = await this.shopifyService.getProducts();
-    } catch (error) {
-      console.error('Error fetching products:', error);
+    } catch (err) {
+      console.error('Error loading products:', err);
     }
   }
 
@@ -70,8 +71,8 @@ export class ProductList implements OnInit {
     try {
       await this.shopifyService.addToCart(variantId);
       this.onCartUpdated.emit();
-    } catch (error) {
-      console.error('Cart error:', error);
+    } catch (err) {
+      console.error('Cart error:', err);
     }
   }
 }
