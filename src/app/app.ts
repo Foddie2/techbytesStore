@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { Navbar } from './components/navbar';
-import { ProductList } from './components/product-list';
+import { Navbar as NavbarComponent } from './components/navbar/navbar.component';
+import { ProductList as ProductListComponent } from './components/product-list/product-list.component';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [Navbar, ProductList],
+  imports: [NavbarComponent, ProductListComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

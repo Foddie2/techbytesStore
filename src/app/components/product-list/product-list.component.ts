@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter, Output, inject } from '@angular/core';
-import { ShopifyService } from '../services/shopify';
+import { ShopifyService } from '../../services/shopify';
 
 @Component({
   selector: 'app-product-list',
