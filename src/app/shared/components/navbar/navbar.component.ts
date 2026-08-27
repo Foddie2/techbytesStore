@@ -1,10 +1,11 @@
-import { Component, input, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit, input, signal, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   template: `
     <header
       class="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors duration-200 sticky top-0 z-50"
@@ -107,10 +108,14 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         <div class="hidden md:flex flex-1 max-w-md relative">
           <input
             type="text"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            (keyup.enter)="onSearch()"
             placeholder="Search products, brands, categories..."
             class="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 pl-4 pr-10 py-2 rounded-full border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 outline-none text-sm transition"
           />
           <button
+            (click)="onSearch()"
             class="absolute right-3 top-2.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,17 +200,17 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
                 <div>
                   <h4 class="font-bold text-slate-900 dark:text-white mb-2">Electronics</h4>
                   <ul class="space-y-2 text-slate-600 dark:text-slate-300">
-                    <li><a routerLink="/products" class="hover:text-blue-600">Laptops</a></li>
-                    <li><a routerLink="/products" class="hover:text-blue-600">Smartphones</a></li>
-                    <li><a routerLink="/products" class="hover:text-blue-600">Headphones</a></li>
+                    <li><a routerLink="/products" [queryParams]="{ category: 'Laptops' }" class="hover:text-blue-600">Laptops</a></li>
+                    <li><a routerLink="/products" [queryParams]="{ category: 'Smartphones' }" class="hover:text-blue-600">Smartphones</a></li>
+                    <li><a routerLink="/products" [queryParams]="{ category: 'Headphones' }" class="hover:text-blue-600">Headphones</a></li>
                   </ul>
                 </div>
                 <div>
                   <h4 class="font-bold text-slate-900 dark:text-white mb-2">Accessories</h4>
                   <ul class="space-y-2 text-slate-600 dark:text-slate-300">
-                    <li><a routerLink="/products" class="hover:text-blue-600">Monitors</a></li>
-                    <li><a routerLink="/products" class="hover:text-blue-600">Keyboards</a></li>
-                    <li><a routerLink="/products" class="hover:text-blue-600">Chargers</a></li>
+                    <li><a routerLink="/products" [queryParams]="{ category: 'Monitors' }" class="hover:text-blue-600">Monitors</a></li>
+                    <li><a routerLink="/products" [queryParams]="{ category: 'Keyboards' }" class="hover:text-blue-600">Keyboards</a></li>
+                    <li><a routerLink="/products" [queryParams]="{ category: 'Chargers' }" class="hover:text-blue-600">Chargers</a></li>
                   </ul>
                 </div>
                 <div
@@ -221,6 +226,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
                   </div>
                   <a
                     routerLink="/products"
+                    [queryParams]="{ q: 'M3' }"
                     class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
                     >Shop Now →</a
                   >
@@ -251,16 +257,19 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
               >
                 <a
                   routerLink="/products"
+                  [queryParams]="{ category: 'Hardware' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
                   >Hardware</a
                 >
                 <a
                   routerLink="/products"
+                  [queryParams]="{ category: 'Software' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
                   >Software</a
                 >
                 <a
                   routerLink="/products"
+                  [queryParams]="{ category: 'Networking' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
                   >Networking</a
                 >
@@ -290,11 +299,29 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
           class="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pt-3 pb-6 space-y-4"
         >
           <!-- Search Bar (Mobile) -->
-          <input
-            type="text"
-            placeholder="Search products..."
-            class="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-4 py-2 rounded-lg text-sm border-none outline-none"
-          />
+          <div class="relative w-full">
+            <input
+              type="text"
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+              (keyup.enter)="onSearch()"
+              placeholder="Search products..."
+              class="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 pl-4 pr-10 py-2 rounded-lg text-sm border-none outline-none"
+            />
+            <button
+              (click)="onSearch()"
+              class="absolute right-3 top-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </button>
+          </div>
 
           <div class="flex flex-col gap-3 font-medium text-slate-700 dark:text-slate-200">
             <a routerLink="/" (click)="isMobileOpen.set(false)" class="py-1">Home</a>
@@ -317,7 +344,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     </header>
   `,
 })
-export class Navbar {
+export class Navbar implements OnInit {
+  private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
+
   cartCount = input<number>(0);
 
   isMobileOpen = signal<boolean>(false);
@@ -326,14 +356,50 @@ export class Navbar {
   isLangOpen = signal<boolean>(false);
   isDarkMode = signal<boolean>(false);
   selectedLang = signal<string>('EN');
+  searchQuery = signal<string>('');
+
+  ngOnInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      // 1. Initialize & Persist Dark Mode State
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const enableDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+      
+      this.isDarkMode.set(enableDark);
+      document.documentElement.classList.toggle('dark', enableDark);
+
+      // 2. Initialize Language State
+      const savedLang = localStorage.getItem('lang');
+      if (savedLang) {
+        this.selectedLang.set(savedLang);
+      }
+    }
+  }
 
   toggleDarkMode() {
     this.isDarkMode.update((v) => !v);
-    document.documentElement.classList.toggle('dark');
+    const isDark = this.isDarkMode();
+    
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.classList.toggle('dark', isDark);
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
   }
 
   selectLang(lang: string) {
     this.selectedLang.set(lang);
     this.isLangOpen.set(false);
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('lang', lang);
+    }
+  }
+
+  onSearch() {
+    const q = this.searchQuery().trim();
+    if (q) {
+      this.router.navigate(['/products'], { queryParams: { q } });
+      this.isMobileOpen.set(false);
+    }
   }
 }

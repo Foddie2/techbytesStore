@@ -1,12 +1,13 @@
 import { Component, OnInit, signal, inject, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ShopifyService } from '../../core/services/shopify';
-import { Hero as HeroComponent } from '../../shared/components/hero/hero';
+import { HeroComponent } from '../../shared/components/hero/hero.component';
+import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, HeroComponent],
+  imports: [CommonModule, HeroComponent, ProductCardComponent],
   template: `
     <div class="space-y-16 pb-16">
       <!-- 2. Hero Section -->
@@ -42,7 +43,7 @@ import { Hero as HeroComponent } from '../../shared/components/hero/hero';
         </div>
       </section>
 
-      <!-- 4. Featured Products (Direct from Shopify API) -->
+      <!-- 4. Featured Products (Direct from Shopify API using Reusable Product Card) -->
       <section id="featured-products" class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-end mb-8">
           <div>
@@ -67,46 +68,7 @@ import { Hero as HeroComponent } from '../../shared/components/hero/hero';
         @if (!isLoading() && products().length > 0) {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @for (product of products(); track product.id) {
-              <article
-                class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col justify-between hover:shadow-xl transition-shadow"
-              >
-                <div>
-                  <div
-                    class="h-48 w-full bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden mb-4 flex items-center justify-center"
-                  >
-                    @if (product.images?.edges?.[0]?.node?.url) {
-                      <img
-                        [src]="product.images.edges[0].node.url"
-                        [alt]="product.title"
-                        class="w-full h-full object-cover"
-                      />
-                    } @else {
-                      <span class="text-xs text-slate-400">No Image Available</span>
-                    }
-                  </div>
-                  <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">
-                    {{ product.title }}
-                  </h3>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4">
-                    {{ product.description }}
-                  </p>
-                </div>
-
-                <div
-                  class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700"
-                >
-                  <span class="font-extrabold text-slate-900 dark:text-white">
-                    {{ formatPrice(product.variants?.edges?.[0]?.node?.price) }}
-                  </span>
-                  <button
-                    [disabled]="addingId() === getVariantId(product)"
-                    (click)="addToCart(getVariantId(product))"
-                    class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition"
-                  >
-                    {{ addingId() === getVariantId(product) ? 'Adding...' : 'Add to Cart' }}
-                  </button>
-                </div>
-              </article>
+              <app-product-card [product]="product" (cartUpdated)="handleCartUpdate()" />
             }
           </div>
         }
