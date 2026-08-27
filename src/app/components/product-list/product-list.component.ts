@@ -1,6 +1,6 @@
 import { Component, OnInit, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ShopifyService } from '../../services/shopify';
+import { ShopifyService } from '../../core/services/shopify';
 
 @Component({
   selector: 'app-product-list',
@@ -42,7 +42,7 @@ import { ShopifyService } from '../../services/shopify';
 
               <div class="card-content">
                 <h3 class="product-title">{{ product.title }}</h3>
-                
+
                 <p class="product-description">
                   {{ truncateText(product.description, 90) }}
                 </p>
@@ -78,136 +78,143 @@ import { ShopifyService } from '../../services/shopify';
       }
     </section>
   `,
-  styles: [`
-    .products-container {
-      padding: 1rem 0;
-    }
-
-    .loading-state, .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: #6b7280;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e5e7eb;
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .error-banner {
-      background-color: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #dc2626;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1.75rem;
-    }
-
-    .product-card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.75rem;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  styles: [
+    `
+      .products-container {
+        padding: 1rem 0;
       }
-    }
 
-    .image-wrapper {
-      width: 100%;
-      height: 220px;
-      background-color: #f9fafb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      .loading-state,
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6b7280;
+      }
 
-      img {
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error-banner {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.75rem;
+      }
+
+      .product-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      .image-wrapper {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: 220px;
+        background-color: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .no-image {
+          color: #9ca3af;
+          font-size: 0.875rem;
+        }
       }
 
-      .no-image {
-        color: #9ca3af;
+      .card-content {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+
+      .product-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+      }
+
+      .product-description {
         font-size: 0.875rem;
-      }
-    }
-
-    .card-content {
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-
-    .product-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .product-description {
-      font-size: 0.875rem;
-      color: #6b7280;
-      line-height: 1.4;
-      margin: 0 0 1.25rem 0;
-      flex-grow: 1;
-    }
-
-    .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: auto;
-    }
-
-    .price {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .add-cart-btn {
-      background-color: #2563eb;
-      color: #ffffff;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-
-      &:hover:not(:disabled) {
-        background-color: #1d4ed8;
+        color: #6b7280;
+        line-height: 1.4;
+        margin: 0 0 1.25rem 0;
+        flex-grow: 1;
       }
 
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
       }
-    }
-  `]
+
+      .price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .add-cart-btn {
+        background-color: #2563eb;
+        color: #ffffff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+
+        &:hover:not(:disabled) {
+          background-color: #1d4ed8;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    `,
+  ],
 })
 export class ProductListComponent implements OnInit {
   private shopifyService = inject(ShopifyService);
@@ -232,7 +239,9 @@ export class ProductListComponent implements OnInit {
       this.products.set(data);
     } catch (error: any) {
       console.error('Error fetching Shopify products:', error);
-      this.errorMessage.set('Failed to load products. Check your configuration or publishing channels.');
+      this.errorMessage.set(
+        'Failed to load products. Check your configuration or publishing channels.',
+      );
     } finally {
       this.isLoading.set(false);
     }

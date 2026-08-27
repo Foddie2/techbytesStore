@@ -1,13 +1,19 @@
-import { Component, signal } from '@angular/core';
-import { Navbar } from './components/navbar/navbar.component';
-import { ProductListComponent } from './components/product-list/product-list.component';
+import { Component, forwardRef, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { Navbar } from './shared/components/navbar/navbar.component';
+import { Footer } from './shared/components/footer/footer';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [Navbar, ProductListComponent],
-  templateUrl: './app.html',
-  styleUrl: './app.scss',
+  imports: [RouterOutlet, forwardRef(() => Navbar), forwardRef(() => Footer)],
+  template: `
+    <app-navbar [cartCount]="cartCount()" />
+    <main class="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <router-outlet />
+    </main>
+    <app-footer />
+  `,
 })
 export class AppComponent {
   cartCount = signal<number>(0);

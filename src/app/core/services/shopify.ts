@@ -1,7 +1,8 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { createStorefrontApiClient } from '@shopify/storefront-api-client';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
+import { Product, CartResponse } from '../models/shopify.model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,7 @@ export class ShopifyService {
     return isPlatformBrowser(this.platformId);
   }
 
-  async getProducts() {
+  async getProducts(): Promise<Product[]> {
     const query = `
       query getProducts {
         products(first: 10) {
@@ -37,7 +38,7 @@ export class ShopifyService {
     return data?.products?.edges?.map((edge: any) => edge.node) || [];
   }
 
-  async addToCart(variantId: string) {
+  async addToCart(variantId: string): Promise<CartResponse> {
     const cartId = this.isBrowser ? localStorage.getItem('cart_id') : null;
     if (!cartId) return this.createCart(variantId);
 
@@ -57,7 +58,7 @@ export class ShopifyService {
     return data.cartLinesAdd.cart;
   }
 
-  private async createCart(variantId: string) {
+  private async createCart(variantId: string): Promise<CartResponse> {
     const mutation = `
       mutation cartCreate($input: CartInput) {
         cartCreate(input: $input) { cart { id checkoutUrl } }

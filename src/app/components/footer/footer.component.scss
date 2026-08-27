@@ -10,14 +10,14 @@ $accent-blue: #3b82f6;
 
   h6 {
     color: white;
-    font-family: "Playfair Display", serif;
+    font-family: 'Playfair Display', serif;
     font-size: 1.1rem;
     margin-bottom: 2rem;
     position: relative;
     font-weight: 600;
 
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       background: $accent-blue;
       width: 30px;
@@ -30,7 +30,7 @@ $accent-blue: #3b82f6;
   p,
   a {
     font-size: 13px;
-    font-family: "Roboto", sans-serif;
+    font-family: 'Roboto', sans-serif;
     line-height: 1.6;
   }
 
