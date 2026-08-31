@@ -1,47 +1,41 @@
-import { Component, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Navbar } from './shared/components/navbar/navbar.component';
-// import { FooterComponent } from './shared/components/footer/footer.component';
+import { CartDrawerComponent } from './shared/components/cart-drawer/cart-drawer.component';
+import { CartService } from './core/services/cart';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar /*, FooterComponent */],
+  imports: [RouterOutlet, Navbar, CartDrawerComponent],
   template: `
-    <app-navbar [cartCount]="cartCount()" />
-    <main class="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <app-navbar [cartCount]="cartService.itemCount()" />
+    <main
+      class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200"
+    >
       <router-outlet (activate)="onRouteActivate($event)" />
     </main>
-    <!-- <app-footer /> -->
+
+    <!-- Global Slide-Over Cart Drawer -->
+    <app-cart-drawer />
   `,
 })
 export class AppComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
-  cartCount = signal<number>(0);
+  public cartService = inject(CartService);
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      const savedCount = localStorage.getItem('cart_count');
-      if (savedCount) {
-        this.cartCount.set(parseInt(savedCount, 10));
-      }
+      this.cartService.initCart();
     }
-  }
-
-  incrementCart() {
-    this.cartCount.update((count) => {
-      const newCount = count + 1;
-      if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem('cart_count', newCount.toString());
-      }
-      return newCount;
-    });
   }
 
   onRouteActivate(componentRef: any) {
     if (componentRef?.onCartUpdated) {
-      componentRef.onCartUpdated.subscribe(() => this.incrementCart());
+      componentRef.onCartUpdated.subscribe(() => {
+        this.cartService.openDrawer();
+      });
     }
   }
 }
