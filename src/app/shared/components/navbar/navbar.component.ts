@@ -1,7 +1,7 @@
 import { Component, OnInit, input, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-
+import { CartService } from '../../../core/services/cart';
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -200,17 +200,59 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
                 <div>
                   <h4 class="font-bold text-slate-900 dark:text-white mb-2">Electronics</h4>
                   <ul class="space-y-2 text-slate-600 dark:text-slate-300">
-                    <li><a routerLink="/products" [queryParams]="{ category: 'Laptops' }" class="hover:text-blue-600">Laptops</a></li>
-                    <li><a routerLink="/products" [queryParams]="{ category: 'Smartphones' }" class="hover:text-blue-600">Smartphones</a></li>
-                    <li><a routerLink="/products" [queryParams]="{ category: 'Headphones' }" class="hover:text-blue-600">Headphones</a></li>
+                    <li>
+                      <a
+                        routerLink="/products"
+                        [queryParams]="{ category: 'Laptops' }"
+                        class="hover:text-blue-600"
+                        >Laptops</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        routerLink="/products"
+                        [queryParams]="{ category: 'Smartphones' }"
+                        class="hover:text-blue-600"
+                        >Smartphones</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        routerLink="/products"
+                        [queryParams]="{ category: 'Headphones' }"
+                        class="hover:text-blue-600"
+                        >Headphones</a
+                      >
+                    </li>
                   </ul>
                 </div>
                 <div>
                   <h4 class="font-bold text-slate-900 dark:text-white mb-2">Accessories</h4>
                   <ul class="space-y-2 text-slate-600 dark:text-slate-300">
-                    <li><a routerLink="/products" [queryParams]="{ category: 'Monitors' }" class="hover:text-blue-600">Monitors</a></li>
-                    <li><a routerLink="/products" [queryParams]="{ category: 'Keyboards' }" class="hover:text-blue-600">Keyboards</a></li>
-                    <li><a routerLink="/products" [queryParams]="{ category: 'Chargers' }" class="hover:text-blue-600">Chargers</a></li>
+                    <li>
+                      <a
+                        routerLink="/products"
+                        [queryParams]="{ category: 'Monitors' }"
+                        class="hover:text-blue-600"
+                        >Monitors</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        routerLink="/products"
+                        [queryParams]="{ category: 'Keyboards' }"
+                        class="hover:text-blue-600"
+                        >Keyboards</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        routerLink="/products"
+                        [queryParams]="{ category: 'Chargers' }"
+                        class="hover:text-blue-600"
+                        >Chargers</a
+                      >
+                    </li>
                   </ul>
                 </div>
                 <div
@@ -347,6 +389,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 export class Navbar implements OnInit {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  public cartService = inject(CartService);
 
   cartCount = input<number>(0);
 
@@ -364,7 +407,7 @@ export class Navbar implements OnInit {
       const savedTheme = localStorage.getItem('theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const enableDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-      
+
       this.isDarkMode.set(enableDark);
       document.documentElement.classList.toggle('dark', enableDark);
 
@@ -379,7 +422,7 @@ export class Navbar implements OnInit {
   toggleDarkMode() {
     this.isDarkMode.update((v) => !v);
     const isDark = this.isDarkMode();
-    
+
     if (isPlatformBrowser(this.platformId)) {
       document.documentElement.classList.toggle('dark', isDark);
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
