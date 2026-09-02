@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Ui } from './ui';
+import { Ui } from './ui.component';
 
 describe('Ui', () => {
   let component: Ui;

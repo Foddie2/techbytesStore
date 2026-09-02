@@ -3,9 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-ui',
   imports: [],
-  templateUrl: './ui.html',
-  styleUrl: './ui.css',
+  template: '',
+  styleUrl: './ui.component.css',
 })
-export class Ui {
-
-}
+export class Ui {}

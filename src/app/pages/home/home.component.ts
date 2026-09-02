@@ -40,7 +40,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <h4 class="font-bold text-slate-900 dark:text-white text-sm">24/7 Dedicated Support</h4>
             <p class="text-xs text-slate-500">Fast email response times</p>
           </div>
-        </div> 
+        </div>
       </section>
 
       <!-- 4. Featured Products (Direct from Shopify API using Reusable Product Card) -->

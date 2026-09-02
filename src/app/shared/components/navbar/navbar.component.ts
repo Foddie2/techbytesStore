@@ -1,7 +1,8 @@
-import { Component, OnInit, input, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from '../../../core/services/cart';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -21,15 +22,16 @@ import { CartService } from '../../../core/services/cart';
             <a
               routerLink="/track-order"
               class="hover:text-blue-600 dark:hover:text-blue-400 transition"
-              >Track Order</a
             >
+              Track Order
+            </a>
             <span class="text-slate-300 dark:text-slate-700">|</span>
 
             <!-- Language Switcher -->
             <div class="relative">
               <button
                 (click)="isLangOpen.set(!isLangOpen())"
-                class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 font-medium"
+                class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 font-medium cursor-pointer"
               >
                 🌐 {{ selectedLang() }}
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,19 +50,19 @@ import { CartService } from '../../../core/services/cart';
                 >
                   <button
                     (click)="selectLang('EN')"
-                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200"
+                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer"
                   >
                     English
                   </button>
                   <button
                     (click)="selectLang('ES')"
-                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200"
+                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer"
                   >
                     Español
                   </button>
                   <button
                     (click)="selectLang('FR')"
-                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200"
+                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer"
                   >
                     Français
                   </button>
@@ -73,7 +75,7 @@ import { CartService } from '../../../core/services/cart';
             <!-- Dark Mode Switcher -->
             <button
               (click)="toggleDarkMode()"
-              class="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+              class="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
               title="Toggle Theme"
             >
               @if (isDarkMode()) {
@@ -116,7 +118,7 @@ import { CartService } from '../../../core/services/cart';
           />
           <button
             (click)="onSearch()"
-            class="absolute right-3 top-2.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+            class="absolute right-3 top-2.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -129,12 +131,13 @@ import { CartService } from '../../../core/services/cart';
           </button>
         </div>
 
-        <!-- Actions: Cart & Mobile Toggle -->
+        <!-- Actions: Cart Trigger & Mobile Toggle -->
         <div class="flex items-center gap-3">
-          <!-- Cart Link -->
-          <a
-            routerLink="/cart"
-            class="relative p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition"
+          <!-- In-App Slide-Over Cart Trigger -->
+          <button
+            (click)="cartService.openDrawer()"
+            class="relative p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
+            title="Open Cart"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -144,19 +147,19 @@ import { CartService } from '../../../core/services/cart';
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
               />
             </svg>
-            @if (cartCount() > 0) {
+            @if (cartService.itemCount() > 0) {
               <span
                 class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900"
               >
-                {{ cartCount() }}
+                {{ cartService.itemCount() }}
               </span>
             }
-          </a>
+          </button>
 
           <!-- Mobile Hamburger Button -->
           <button
             (click)="isMobileOpen.set(!isMobileOpen())"
-            class="md:hidden p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600"
+            class="md:hidden p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 cursor-pointer"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -175,11 +178,11 @@ import { CartService } from '../../../core/services/cart';
         class="hidden md:block bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200/60 dark:border-slate-800 text-sm"
       >
         <div class="max-w-7xl mx-auto px-4 lg:px-8 flex items-center gap-8 h-11">
-          <!-- Mega Menu Trigger (Shop) -->
+          <!-- Mega Menu Trigger -->
           <div class="relative group" (mouseleave)="isMegaOpen.set(false)">
             <button
               (mouseenter)="isMegaOpen.set(true)"
-              class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 h-11"
+              class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 h-11 cursor-pointer"
             >
               Shop Menu
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +195,6 @@ import { CartService } from '../../../core/services/cart';
               </svg>
             </button>
 
-            <!-- Mega Menu Content -->
             @if (isMegaOpen()) {
               <div
                 class="absolute left-0 top-11 w-[600px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-b-xl shadow-xl p-6 grid grid-cols-3 gap-6 z-50"
@@ -205,24 +207,27 @@ import { CartService } from '../../../core/services/cart';
                         routerLink="/products"
                         [queryParams]="{ category: 'Laptops' }"
                         class="hover:text-blue-600"
-                        >Laptops</a
                       >
+                        Laptops
+                      </a>
                     </li>
                     <li>
                       <a
                         routerLink="/products"
                         [queryParams]="{ category: 'Smartphones' }"
                         class="hover:text-blue-600"
-                        >Smartphones</a
                       >
+                        Smartphones
+                      </a>
                     </li>
                     <li>
                       <a
                         routerLink="/products"
                         [queryParams]="{ category: 'Headphones' }"
                         class="hover:text-blue-600"
-                        >Headphones</a
                       >
+                        Headphones
+                      </a>
                     </li>
                   </ul>
                 </div>
@@ -234,24 +239,27 @@ import { CartService } from '../../../core/services/cart';
                         routerLink="/products"
                         [queryParams]="{ category: 'Monitors' }"
                         class="hover:text-blue-600"
-                        >Monitors</a
                       >
+                        Monitors
+                      </a>
                     </li>
                     <li>
                       <a
                         routerLink="/products"
                         [queryParams]="{ category: 'Keyboards' }"
                         class="hover:text-blue-600"
-                        >Keyboards</a
                       >
+                        Keyboards
+                      </a>
                     </li>
                     <li>
                       <a
                         routerLink="/products"
                         [queryParams]="{ category: 'Chargers' }"
                         class="hover:text-blue-600"
-                        >Chargers</a
                       >
+                        Chargers
+                      </a>
                     </li>
                   </ul>
                 </div>
@@ -259,9 +267,9 @@ import { CartService } from '../../../core/services/cart';
                   class="bg-blue-50 dark:bg-slate-700/50 p-4 rounded-lg flex flex-col justify-between"
                 >
                   <div>
-                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase"
-                      >Featured</span
-                    >
+                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">
+                      Featured
+                    </span>
                     <h5 class="font-semibold text-slate-900 dark:text-white mt-1">
                       New M3 Laptops
                     </h5>
@@ -270,18 +278,19 @@ import { CartService } from '../../../core/services/cart';
                     routerLink="/products"
                     [queryParams]="{ q: 'M3' }"
                     class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                    >Shop Now →</a
                   >
+                    Shop Now →
+                  </a>
                 </div>
               </div>
             }
           </div>
 
-          <!-- Dropdown Trigger (Categories) -->
+          <!-- Categories Dropdown Trigger -->
           <div class="relative" (mouseleave)="isCatOpen.set(false)">
             <button
               (mouseenter)="isCatOpen.set(true)"
-              class="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 h-11"
+              class="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 h-11 cursor-pointer"
             >
               Categories
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,37 +310,42 @@ import { CartService } from '../../../core/services/cart';
                   routerLink="/products"
                   [queryParams]="{ category: 'Hardware' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >Hardware</a
                 >
+                  Hardware
+                </a>
                 <a
                   routerLink="/products"
                   [queryParams]="{ category: 'Software' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >Software</a
                 >
+                  Software
+                </a>
                 <a
                   routerLink="/products"
                   [queryParams]="{ category: 'Networking' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >Networking</a
                 >
+                  Networking
+                </a>
               </div>
             }
           </div>
 
-          <!-- Standard Links -->
+          <!-- Standard Navigation Links -->
           <a
             routerLink="/best-sellers"
             routerLinkActive="text-blue-600 font-semibold"
             class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
-            >Best Sellers</a
           >
+            Best Sellers
+          </a>
           <a
             routerLink="/new-arrivals"
             routerLinkActive="text-blue-600 font-semibold"
             class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
-            >New Arrivals</a
           >
+            New Arrivals
+          </a>
         </div>
       </nav>
 
@@ -368,18 +382,19 @@ import { CartService } from '../../../core/services/cart';
           <div class="flex flex-col gap-3 font-medium text-slate-700 dark:text-slate-200">
             <a routerLink="/" (click)="isMobileOpen.set(false)" class="py-1">Home</a>
             <a routerLink="/products" (click)="isMobileOpen.set(false)" class="py-1">Shop All</a>
-            <a routerLink="/best-sellers" (click)="isMobileOpen.set(false)" class="py-1"
-              >Best Sellers</a
-            >
-            <a routerLink="/new-arrivals" (click)="isMobileOpen.set(false)" class="py-1"
-              >New Arrivals</a
-            >
+            <a routerLink="/best-sellers" (click)="isMobileOpen.set(false)" class="py-1">
+              Best Sellers
+            </a>
+            <a routerLink="/new-arrivals" (click)="isMobileOpen.set(false)" class="py-1">
+              New Arrivals
+            </a>
             <a
               routerLink="/track-order"
               (click)="isMobileOpen.set(false)"
               class="py-1 text-slate-500"
-              >Track Order</a
             >
+              Track Order
+            </a>
           </div>
         </div>
       }
@@ -391,8 +406,6 @@ export class Navbar implements OnInit {
   private platformId = inject(PLATFORM_ID);
   public cartService = inject(CartService);
 
-  cartCount = input<number>(0);
-
   isMobileOpen = signal<boolean>(false);
   isMegaOpen = signal<boolean>(false);
   isCatOpen = signal<boolean>(false);
@@ -401,7 +414,7 @@ export class Navbar implements OnInit {
   selectedLang = signal<string>('EN');
   searchQuery = signal<string>('');
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       // 1. Initialize & Persist Dark Mode State
       const savedTheme = localStorage.getItem('theme');
@@ -419,7 +432,7 @@ export class Navbar implements OnInit {
     }
   }
 
-  toggleDarkMode() {
+  toggleDarkMode(): void {
     this.isDarkMode.update((v) => !v);
     const isDark = this.isDarkMode();
 
@@ -429,7 +442,7 @@ export class Navbar implements OnInit {
     }
   }
 
-  selectLang(lang: string) {
+  selectLang(lang: string): void {
     this.selectedLang.set(lang);
     this.isLangOpen.set(false);
 
@@ -438,7 +451,7 @@ export class Navbar implements OnInit {
     }
   }
 
-  onSearch() {
+  onSearch(): void {
     const q = this.searchQuery().trim();
     if (q) {
       this.router.navigate(['/products'], { queryParams: { q } });
