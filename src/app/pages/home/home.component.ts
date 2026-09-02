@@ -14,7 +14,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       <app-hero (onCartUpdated)="handleCartUpdate()" />
 
       <!-- 3. Trust / Benefits Bar -->
-      <section class="max-w-7xl mx-auto px-4">
+      <section class="max-w-7xl mx-auto px-4 pt-12">
         <div
           class="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm text-center"
         >

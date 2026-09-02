@@ -197,7 +197,7 @@ import { CartService } from '../../../core/services/cart';
 
             @if (isMegaOpen()) {
               <div
-                class="absolute left-0 top-11 w-[600px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-b-xl shadow-xl p-6 grid grid-cols-3 gap-6 z-50"
+                class="absolute left-0 top-11 w-150 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-b-xl shadow-xl p-6 grid grid-cols-3 gap-6 z-50"
               >
                 <div>
                   <h4 class="font-bold text-slate-900 dark:text-white mb-2">Electronics</h4>
