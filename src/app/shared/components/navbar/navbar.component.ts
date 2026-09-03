@@ -13,7 +13,7 @@ import { CartService } from '../../../core/services/cart';
     >
       <!-- 1. Top Utility Bar -->
       <div
-        class="bg-slate-100 dark:bg-slate-950 text-xs text-slate-600 dark:text-slate-400 py-1.5 px-4 lg:px-8 border-b border-slate-200 dark:border-slate-800"
+        class="bg-slate-100 dark:bg-slate-950 text-sm text-slate-600 dark:text-slate-400 py-1.5 px-4 lg:px-8 border-b border-slate-200 dark:border-slate-800"
       >
         <div class="max-w-7xl mx-auto flex justify-between items-center">
           <p class="hidden sm:block">⚡ Express shipping on orders over $50</p>
@@ -101,7 +101,7 @@ import { CartService } from '../../../core/services/cart';
         <!-- Brand Logo -->
         <a
           routerLink="/"
-          class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-1"
+          class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-1"
         >
           <span class="text-blue-600 dark:text-blue-500">Tech</span>Bytes
         </a>
@@ -267,7 +267,7 @@ import { CartService } from '../../../core/services/cart';
                   class="bg-blue-50 dark:bg-slate-700/50 p-4 rounded-lg flex flex-col justify-between"
                 >
                   <div>
-                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase">
+                    <span class="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase">
                       Featured
                     </span>
                     <h5 class="font-semibold text-slate-900 dark:text-white mt-1">
@@ -277,7 +277,7 @@ import { CartService } from '../../../core/services/cart';
                   <a
                     routerLink="/products"
                     [queryParams]="{ q: 'M3' }"
-                    class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                    class="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     Shop Now →
                   </a>

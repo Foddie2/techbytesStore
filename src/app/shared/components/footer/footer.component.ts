@@ -20,18 +20,18 @@ import { RouterLink } from '@angular/router';
             >
               <span class="text-blue-500">Tech</span>Bytes
             </a>
-            <p class="text-sm text-slate-400 leading-relaxed max-w-sm">
+            <p class="text-md text-slate-400 leading-relaxed max-w-sm">
               Your destination for high-performance electronics and verified accessories. Synced
               directly via Shopify Storefront APIs for fast global dispatch.
             </p>
             <div class="flex items-center gap-3 pt-2">
               <span
-                class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
               >
                 🛡️ 256-Bit SSL Encrypted
               </span>
               <span
-                class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"
               >
                 🚚 Tracked Express Shipping
               </span>
@@ -40,8 +40,8 @@ import { RouterLink } from '@angular/router';
 
           <!-- Quick Navigation -->
           <div class="space-y-3">
-            <h4 class="text-sm font-bold text-white uppercase tracking-wider">Catalog</h4>
-            <ul class="space-y-2 text-sm">
+            <h4 class="text-md font-bold text-white uppercase tracking-wider">Catalog</h4>
+            <ul class="space-y-2 text-md">
               <li>
                 <a
                   routerLink="/products"
@@ -82,8 +82,8 @@ import { RouterLink } from '@angular/router';
 
           <!-- Customer Service -->
           <div class="space-y-3">
-            <h4 class="text-sm font-bold text-white uppercase tracking-wider">Customer Care</h4>
-            <ul class="space-y-2 text-sm">
+            <h4 class="text-md font-bold text-white uppercase tracking-wider">Customer Care</h4>
+            <ul class="space-y-2 text-md">
               <li>
                 <a
                   routerLink="/track-order"
@@ -105,8 +105,8 @@ import { RouterLink } from '@angular/router';
 
           <!-- Store Policies -->
           <div class="space-y-3">
-            <h4 class="text-sm font-bold text-white uppercase tracking-wider">Legal</h4>
-            <ul class="space-y-2 text-sm">
+            <h4 class="text-md font-bold text-white uppercase tracking-wider">Legal</h4>
+            <ul class="space-y-2 text-md">
               <li>
                 <a routerLink="/products" class="hover:text-white transition">Privacy Policy</a>
               </li>
@@ -125,7 +125,7 @@ import { RouterLink } from '@angular/router';
 
         <!-- Bottom Bar -->
         <div
-          class="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500"
+          class="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500"
         >
           <p>
             © {{ currentYear }} TechBytes Store. All rights reserved. Headless Shopify Integration.

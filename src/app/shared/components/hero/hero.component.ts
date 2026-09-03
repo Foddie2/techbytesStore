@@ -50,7 +50,7 @@ import { ShopifyService } from '../../../core/services/shopify';
 
           <!-- Supporting Copy -->
           <p
-            class="text-slate-300 text-base sm:text-lg lg:text-xl font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0"
+            class="text-slate-300 text-md sm:text-lg lg:text-2xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0"
           >
             Eliminate daily friction with intelligent gadgets, automated home gear, and practical
             productivity devices engineered for seamless convenience.
@@ -62,7 +62,7 @@ import { ShopifyService } from '../../../core/services/shopify';
           >
             <a
               href="#featured-products"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 text-base"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 text-md"
             >
               <span>Explore Practical Products</span>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ import { ShopifyService } from '../../../core/services/shopify';
 
             <a
               href="#why-us"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 font-semibold px-7 py-4 rounded-xl transition-all duration-200 text-base"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 font-semibold px-7 py-4 rounded-xl transition-all duration-200 text-md"
             >
               How It Works
             </a>

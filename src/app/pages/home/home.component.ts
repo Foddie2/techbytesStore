@@ -20,25 +20,25 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         >
           <div class="space-y-1">
             <span class="text-2xl">🚚</span>
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm">
+            <h4 class="font-bold text-slate-900 dark:text-white text-lg">
               Global Express Delivery
             </h4>
-            <p class="text-xs text-slate-500">Tracked shipping on orders over $50</p>
+            <p class="text-sm text-slate-500">Tracked shipping on orders over $50</p>
           </div>
           <div class="space-y-1">
             <span class="text-2xl">🛡️</span>
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm">30-Day Money Back</h4>
-            <p class="text-xs text-slate-500">Hassle-free return policy</p>
+            <h4 class="font-bold text-slate-900 dark:text-white text-lg">30-Day Money Back</h4>
+            <p class="text-sm text-slate-500">Hassle-free return policy</p>
           </div>
           <div class="space-y-1">
             <span class="text-2xl">🔒</span>
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm">Encrypted Checkout</h4>
-            <p class="text-xs text-slate-500">Protected via 256-bit SSL</p>
+            <h4 class="font-bold text-slate-900 dark:text-white text-lg">Encrypted Checkout</h4>
+            <p class="text-sm text-slate-500">Protected via 256-bit SSL</p>
           </div>
           <div class="space-y-1">
             <span class="text-2xl">💬</span>
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm">24/7 Dedicated Support</h4>
-            <p class="text-xs text-slate-500">Fast email response times</p>
+            <h4 class="font-bold text-slate-900 dark:text-white text-lg">24/7 Dedicated Support</h4>
+            <p class="text-sm text-slate-500">Fast email response times</p>
           </div>
         </div>
       </section>
@@ -50,7 +50,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
               Featured Drops
             </h2>
-            <p class="text-slate-500 text-sm mt-1">
+            <p class="text-slate-500 text-lg mt-1">
               Direct storefront inventory synced in real-time.
             </p>
           </div>
@@ -78,13 +78,13 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       <section class="bg-slate-100 dark:bg-slate-900 py-16">
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div class="space-y-4">
-            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest"
+            <span class="text-sm font-bold text-blue-600 uppercase tracking-widest"
               >The Problem</span
             >
             <h3 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
               Overpriced Electronics With Unreliable Shipping Times.
             </h3>
-            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
               Most online electronics dropshippers use slow fulfillment channels with unverified
               product quality, resulting in weeks of waiting and defective gear.
             </p>
@@ -92,13 +92,13 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           <div
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-8 rounded-2xl shadow-sm space-y-4"
           >
-            <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest"
+            <span class="text-sm font-bold text-emerald-500 uppercase tracking-widest"
               >Our Solution</span
             >
             <h4 class="text-xl font-bold text-slate-900 dark:text-white">
               Direct-API Verified Sourcing
             </h4>
-            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
               TechBytes integrates direct Shopify inventory pipelines to guarantee real-time stock
               levels, fast dispatching, and strict quality checks before items leave the warehouse.
             </p>
@@ -128,15 +128,15 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                 }
               </div>
               <div class="flex-1">
-                <h4 class="font-bold text-slate-900 dark:text-white text-sm line-clamp-1">
+                <h4 class="font-bold text-slate-900 dark:text-white text-lg line-clamp-1">
                   {{ product.title }}
                 </h4>
-                <p class="text-xs font-bold text-blue-600 mt-1">
+                <p class="text-sm font-bold text-blue-600 mt-1">
                   {{ formatPrice(product.variants?.edges?.[0]?.node?.price) }}
                 </p>
                 <button
                   (click)="addToCart(getVariantId(product))"
-                  class="text-xs text-slate-600 dark:text-slate-300 font-semibold underline mt-2 hover:text-blue-600"
+                  class="text-sm text-slate-600 dark:text-slate-300 font-semibold underline mt-2 hover:text-blue-600"
                 >
                   Quick Buy
                 </button>
@@ -152,18 +152,18 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           class="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-3xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl"
         >
           <div class="space-y-2 text-center md:text-left">
-            <span class="text-xs font-bold uppercase tracking-wider text-blue-200"
+            <span class="text-sm font-bold uppercase tracking-wider text-blue-200"
               >Limited Time Offer</span
             >
             <h3 class="text-3xl font-extrabold">Get 15% Off Your First Store Order</h3>
-            <p class="text-blue-100 text-sm">
+            <p class="text-blue-100 text-lg">
               Apply code <span class="font-mono bg-white/20 px-2 py-1 rounded">TECH15</span> at
               checkout.
             </p>
           </div>
           <a
             href="#featured-products"
-            class="bg-white text-blue-900 font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition text-sm"
+            class="bg-white text-blue-900 font-bold px-8 py-3.5 rounded-xl hover:bg-blue-50 transition text-lg"
           >
             Shop Promotion
           </a>
@@ -183,7 +183,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
               1
             </div>
             <h4 class="font-bold text-slate-900 dark:text-white">Curated Tech Selection</h4>
-            <p class="text-slate-500 text-xs leading-relaxed">
+            <p class="text-slate-500 text-sm leading-relaxed">
               We test every hardware line to ensure specs match description accuracy.
             </p>
           </div>
@@ -194,7 +194,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
               2
             </div>
             <h4 class="font-bold text-slate-900 dark:text-white">Transparent Tracking</h4>
-            <p class="text-slate-500 text-xs leading-relaxed">
+            <p class="text-slate-500 text-sm leading-relaxed">
               Receive automated delivery updates directly via SMS or email.
             </p>
           </div>
@@ -205,7 +205,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
               3
             </div>
             <h4 class="font-bold text-slate-900 dark:text-white">Verified Satisfaction</h4>
-            <p class="text-slate-500 text-xs leading-relaxed">
+            <p class="text-slate-500 text-sm leading-relaxed">
               Full refund guarantees if items arrive damaged or non-functional.
             </p>
           </div>
@@ -221,34 +221,34 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           <div
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl space-y-3"
           >
-            <div class="text-amber-400 text-sm">★★★★★</div>
-            <p class="text-slate-600 dark:text-slate-300 text-xs italic">
+            <div class="text-amber-400 text-lg">★★★★★</div>
+            <p class="text-slate-600 dark:text-slate-300 text-sm italic">
               "Order arrived in 4 days. Product quality matched the Shopify catalog description
               exactly."
             </p>
-            <span class="block text-xs font-bold text-slate-900 dark:text-white"
+            <span class="block text-sm font-bold text-slate-900 dark:text-white"
               >— Alex M., Verified Buyer</span
             >
           </div>
           <div
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl space-y-3"
           >
-            <div class="text-amber-400 text-sm">★★★★★</div>
-            <p class="text-slate-600 dark:text-slate-300 text-xs italic">
+            <div class="text-amber-400 text-lg">★★★★★</div>
+            <p class="text-slate-600 dark:text-slate-300 text-sm italic">
               "Checkout was seamless and tracking links updated accurately throughout shipping."
             </p>
-            <span class="block text-xs font-bold text-slate-900 dark:text-white"
+            <span class="block text-sm font-bold text-slate-900 dark:text-white"
               >— Sarah K., Verified Buyer</span
             >
           </div>
           <div
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl space-y-3"
           >
-            <div class="text-amber-400 text-sm">★★★★★</div>
-            <p class="text-slate-600 dark:text-slate-300 text-xs italic">
+            <div class="text-amber-400 text-lg">★★★★★</div>
+            <p class="text-slate-600 dark:text-slate-300 text-sm italic">
               "Excellent customer support response time when requesting an invoice."
             </p>
-            <span class="block text-xs font-bold text-slate-900 dark:text-white"
+            <span class="block text-sm font-bold text-slate-900 dark:text-white"
               >— David R., Verified Buyer</span
             >
           </div>
@@ -264,10 +264,10 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           <details
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 cursor-pointer"
           >
-            <summary class="font-bold text-slate-900 dark:text-white text-sm">
+            <summary class="font-bold text-slate-900 dark:text-white text-lg">
               How long does shipping take?
             </summary>
-            <p class="text-xs text-slate-500 mt-2">
+            <p class="text-sm text-slate-500 mt-2">
               Standard fulfillment processes orders within 24-48 hours. Delivery averages 3-7
               business days depending on location.
             </p>
@@ -275,20 +275,20 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           <details
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 cursor-pointer"
           >
-            <summary class="font-bold text-slate-900 dark:text-white text-sm">
+            <summary class="font-bold text-slate-900 dark:text-white text-lg">
               What is your return policy?
             </summary>
-            <p class="text-xs text-slate-500 mt-2">
+            <p class="text-sm text-slate-500 mt-2">
               We offer a 30-day return window on all unused hardware items in original packaging.
             </p>
           </details>
           <details
             class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 cursor-pointer"
           >
-            <summary class="font-bold text-slate-900 dark:text-white text-sm">
+            <summary class="font-bold text-slate-900 dark:text-white text-lg">
               How do I track my order?
             </summary>
-            <p class="text-xs text-slate-500 mt-2">
+            <p class="text-sm text-slate-500 mt-2">
               Once dispatched, a tracking ID is generated and sent via email for live carrier status
               monitoring.
             </p>
@@ -300,7 +300,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       <section class="max-w-3xl mx-auto px-4 text-center">
         <div class="bg-slate-900 text-white p-8 rounded-3xl space-y-4">
           <h3 class="text-xl font-bold">Subscribe to Tech Alerts</h3>
-          <p class="text-xs text-slate-400">
+          <p class="text-sm text-slate-400">
             Get early notification of inventory drops and private discount codes.
           </p>
           <form
@@ -310,10 +310,10 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <input
               type="email"
               placeholder="Enter your email"
-              class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white flex-1 outline-none"
+              class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white flex-1 outline-none"
             />
             <button
-              class="bg-blue-600 hover:bg-blue-500 font-bold px-6 py-2.5 rounded-xl text-xs transition"
+              class="bg-blue-600 hover:bg-blue-500 font-bold px-6 py-2.5 rounded-xl text-sm transition"
             >
               Subscribe
             </button>
