@@ -4,12 +4,13 @@ import { RouterOutlet } from '@angular/router';
 import { Navbar } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { CartDrawerComponent } from './shared/components/cart-drawer/cart-drawer.component';
+import { CookieConsentComponent } from './shared/components/cookie-consent/cookie-consent.component';
 import { CartService } from './core/services/cart';
 
 @Component({
   standalone: true,
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, FooterComponent, CartDrawerComponent],
+  imports: [RouterOutlet, Navbar, FooterComponent, CartDrawerComponent, CookieConsentComponent],
   template: `
     <app-navbar />
     <main
@@ -19,15 +20,16 @@ import { CartService } from './core/services/cart';
     </main>
     <app-footer />
 
-    <!-- Global Slide-Over Cart Drawer -->
+    <!-- Global Cart Drawer & Cookie Modal -->
     <app-cart-drawer />
+    <app-cookie-consent />
   `,
 })
 export class AppComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   public cartService = inject(CartService);
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.cartService.initCart();
     }
