@@ -210,10 +210,10 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <span class="text-sm font-bold text-blue-600 uppercase tracking-widest"
               >The Problem</span
             >
-            <h3 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white">
+            <h3 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white">
               Overpriced Electronics With Unreliable Shipping Times.
             </h3>
-            <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-400 text-md leading-relaxed">
               Most online electronics dropshippers use slow fulfillment channels with unverified
               product quality, resulting in weeks of waiting and defective gear.
             </p>
@@ -227,7 +227,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <h4 class="text-xl font-bold text-slate-900 dark:text-white">
               Direct-API Verified Sourcing
             </h4>
-            <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-400 text-md leading-relaxed">
               TechBytes integrates direct Shopify inventory pipelines to guarantee real-time stock
               levels, fast dispatching, and strict quality checks before items leave the warehouse.
             </p>

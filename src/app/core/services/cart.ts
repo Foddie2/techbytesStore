@@ -21,6 +21,15 @@ export interface CartDetails {
   lines: CartItem[];
 }
 
+export interface BuyerIdentityInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address1: string;
+  city: string;
+  zip: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -255,6 +264,71 @@ export class CartService {
       }
     } catch (err) {
       console.error('Remove item error:', err);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Native Shopify Storefront API Buyer Identity Mutation
+   * Pre-fills customer email and shipping address inside the Shopify Cart before checkout.
+   */
+  async updateBuyerIdentity(buyerInfo: BuyerIdentityInput): Promise<void> {
+    const cartId = this.cart()?.id;
+    if (!cartId) return;
+
+    this.isLoading.set(true);
+    const mutation = `
+      mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+        cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+          cart {
+            id checkoutUrl totalQuantity
+            cost { subtotalAmount { amount currencyCode } }
+            lines(first: 50) {
+              edges {
+                node {
+                  id quantity
+                  merchandise {
+                    ... on ProductVariant {
+                      id title price { amount currencyCode }
+                      product { title images(first: 1) { edges { node { url } } } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          userErrors { field message }
+        }
+      }
+    `;
+
+    try {
+      const { data, errors }: any = await this.client.request(mutation, {
+        variables: {
+          cartId,
+          buyerIdentity: {
+            email: buyerInfo.email,
+            deliveryAddressPreferences: [
+              {
+                deliveryAddress: {
+                  address1: buyerInfo.address1,
+                  city: buyerInfo.city,
+                  firstName: buyerInfo.firstName,
+                  lastName: buyerInfo.lastName,
+                  zip: buyerInfo.zip,
+                },
+              },
+            ],
+          },
+        },
+      });
+
+      if (data?.cartBuyerIdentityUpdate?.cart) {
+        this.cart.set(this.parseShopifyCart(data.cartBuyerIdentityUpdate.cart));
+      }
+    } catch (err) {
+      console.error('Failed to update buyer identity on cart:', err);
     } finally {
       this.isLoading.set(false);
     }

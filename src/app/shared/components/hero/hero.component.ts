@@ -46,7 +46,7 @@ interface HeroSlide {
         <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
           <!-- Slide Pill & Progress Controls -->
           <div class="flex items-center justify-center lg:justify-start gap-3">
-            <div
+            <!-- <div
               class="inline-flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm transition-colors duration-200"
             >
               <span
@@ -57,10 +57,10 @@ interface HeroSlide {
               >
                 {{ activeSlide().tagline }}
               </span>
-            </div>
+            </div> -->
 
             <!-- Carousel Indicators -->
-            <div class="flex items-center gap-1.5 ml-2">
+            <div class="flex items-center gap-2 ml-2">
               @for (slide of slides(); track $index) {
                 <button
                   (click)="setSlide($index)"
@@ -78,13 +78,13 @@ interface HeroSlide {
           </div>
 
           <!-- Dynamic Headline Area (Fixed Min-Height Prevents CLS Layout Shift) -->
-          <div class="min-h-[140px] sm:min-h-[160px] flex items-center">
+          <div class="min-h-35 sm:min-h-40 flex items-center">
             <h1
               class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-tight transition-opacity duration-500"
             >
               {{ activeSlide().headline }}
               <span
-                class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
+                class="block text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
               >
                 {{ activeSlide().highlightText }}
               </span>
@@ -92,7 +92,7 @@ interface HeroSlide {
           </div>
 
           <!-- Dynamic Description Area -->
-          <div class="min-h-[72px] sm:min-h-[64px] flex items-center">
+          <div class="min-h-18 sm:min-h-16 flex items-center">
             <p
               class="text-slate-600 dark:text-slate-300 text-md sm:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0 transition-opacity duration-500"
             >
@@ -164,7 +164,7 @@ interface HeroSlide {
             <!-- Glow Outline -->
             <div
               aria-hidden="true"
-              class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
+              class="absolute -inset-1 bg-linear-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
             ></div>
 
             <!-- Synchronized Product Card -->

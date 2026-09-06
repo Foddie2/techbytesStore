@@ -17,10 +17,10 @@ import { RouterLink } from '@angular/router';
   template: `
     @if (isVisible()) {
       <div
-        class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-[9999] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-5 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-2xl transition-all duration-300"
+        class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-9999 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-5 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-2xl transition-all duration-300"
       >
         <div class="flex items-start gap-3">
-          <span class="text-2xl flex-shrink-0">🍪</span>
+          <span class="text-2xl shrink-0">🍪</span>
           <div class="space-y-2 flex-1">
             <h4 class="text-sm font-bold text-slate-900 dark:text-white">
               Cookie & Privacy Preferences

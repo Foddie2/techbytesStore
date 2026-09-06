@@ -31,7 +31,7 @@ import { RouterLink } from '@angular/router';
                   type="email"
                   required
                   placeholder="Enter your email"
-                  class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 flex-1 min-w-[240px]"
+                  class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-blue-500 flex-1 min-w-60"
                 />
                 <button
                   type="submit"
