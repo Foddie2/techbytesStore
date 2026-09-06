@@ -1,4 +1,4 @@
-import { Component, Input, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Product, ProductVariant } from '../../../core/models/shopify.model';
 import { CartService } from '../../../core/services/cart';
@@ -10,7 +10,8 @@ import { CartService } from '../../../core/services/cart';
   template: `
     @if (product) {
       <div
-        class="group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-blue-500/50 transition-all duration-300"
+        (click)="onCardClick()"
+        class="group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-blue-500/50 transition-all duration-300 cursor-pointer h-full"
       >
         <!-- Top Image & Badges Container -->
         <div class="relative w-full h-60 bg-slate-100 dark:bg-slate-900 overflow-hidden">
@@ -74,8 +75,8 @@ import { CartService } from '../../../core/services/cart';
             </div>
 
             <!-- Action Buttons -->
-            <div class="grid grid-cols-2 gap-2">
-              <!-- Add to Cart (Opens Slide-Over Drawer in App) -->
+            <div class="grid grid-cols-2 gap-2" (click)="$event.stopPropagation()">
+              <!-- Add to Cart (Opens In-App Cart Drawer) -->
               <button
                 (click)="onAddToCart()"
                 [disabled]="isAdding() || !defaultVariant?.availableForSale"
@@ -84,13 +85,13 @@ import { CartService } from '../../../core/services/cart';
                 {{ isAdding() ? 'Adding...' : 'Add to Cart' }}
               </button>
 
-              <!-- Buy Now (Direct Checkout Redirect) -->
+              <!-- Buy Now (Adds & Opens Cart Drawer Directly) -->
               <button
                 (click)="onBuyNow()"
                 [disabled]="isBuying() || !defaultVariant?.availableForSale"
                 class="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 cursor-pointer text-center"
               >
-                {{ isBuying() ? 'Redirecting...' : 'Buy Now' }}
+                {{ isBuying() ? 'Buying...' : 'Buy Now' }}
               </button>
             </div>
           </div>
@@ -103,6 +104,7 @@ export class ProductCardComponent {
   public cartService = inject(CartService);
 
   @Input({ required: true }) product!: Product;
+  @Output() selectProduct = new EventEmitter<Product>();
 
   isAdding = signal<boolean>(false);
   isBuying = signal<boolean>(false);
@@ -133,6 +135,10 @@ export class ProductCardComponent {
     }).format(parseFloat(priceObj.amount));
   }
 
+  onCardClick(): void {
+    this.selectProduct.emit(this.product);
+  }
+
   async onAddToCart(): Promise<void> {
     const variantId = this.defaultVariant?.id;
     if (!variantId) return;
@@ -154,9 +160,10 @@ export class ProductCardComponent {
     this.isBuying.set(true);
     try {
       await this.cartService.addToCart(variantId, 1);
-      this.cartService.proceedToCheckout();
+      this.cartService.openDrawer();
     } catch (err: unknown) {
-      console.error('Buy Now checkout error:', err);
+      console.error('Buy Now cart error:', err);
+    } finally {
       this.isBuying.set(false);
     }
   }

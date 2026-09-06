@@ -1,7 +1,47 @@
-import { Component, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
+import { Component, Injectable, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from '../../../core/services/cart';
+
+@Injectable({ providedIn: 'root' })
+export class ThemeService {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isDarkMode = signal(false);
+
+  constructor() {
+    this.initTheme();
+  }
+
+  private initTheme(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+
+      this.isDarkMode.set(isDark);
+      this.applyTheme(isDark);
+    }
+  }
+
+  toggleDarkMode(): void {
+    const nextState = !this.isDarkMode();
+    this.isDarkMode.set(nextState);
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('theme', nextState ? 'dark' : 'light');
+      this.applyTheme(nextState);
+    }
+  }
+
+  private applyTheme(isDark: boolean): void {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }
+}
 
 @Component({
   selector: 'app-navbar',
@@ -74,11 +114,11 @@ import { CartService } from '../../../core/services/cart';
 
             <!-- Dark Mode Switcher -->
             <button
-              (click)="toggleDarkMode()"
+              (click)="themeService.toggleDarkMode()"
               class="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
               title="Toggle Theme"
             >
-              @if (isDarkMode()) {
+              @if (themeService.isDarkMode()) {
                 <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fill-rule="evenodd"
@@ -405,40 +445,21 @@ export class Navbar implements OnInit {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   public cartService = inject(CartService);
+  public themeService = inject(ThemeService);
 
   isMobileOpen = signal<boolean>(false);
   isMegaOpen = signal<boolean>(false);
   isCatOpen = signal<boolean>(false);
   isLangOpen = signal<boolean>(false);
-  isDarkMode = signal<boolean>(false);
   selectedLang = signal<string>('EN');
   searchQuery = signal<string>('');
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      // 1. Initialize & Persist Dark Mode State
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const enableDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-
-      this.isDarkMode.set(enableDark);
-      document.documentElement.classList.toggle('dark', enableDark);
-
-      // 2. Initialize Language State
       const savedLang = localStorage.getItem('lang');
       if (savedLang) {
         this.selectedLang.set(savedLang);
       }
-    }
-  }
-
-  toggleDarkMode(): void {
-    this.isDarkMode.update((v) => !v);
-    const isDark = this.isDarkMode();
-
-    if (isPlatformBrowser(this.platformId)) {
-      document.documentElement.classList.toggle('dark', isDark);
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
   }
 

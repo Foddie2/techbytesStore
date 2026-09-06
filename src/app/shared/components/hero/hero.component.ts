@@ -1,7 +1,25 @@
-import { Component, OnInit, signal, inject, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
-// Adjust import path below if your service file is named 'shopify' or 'shopify.service'
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  inject,
+  PLATFORM_ID,
+  Output,
+  EventEmitter,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ShopifyService } from '../../../core/services/shopify';
+import { CartService } from '../../../core/services/cart';
+
+interface HeroSlide {
+  tagline: string;
+  headline: string;
+  highlightText: string;
+  description: string;
+  product?: any;
+}
 
 @Component({
   selector: 'app-hero',
@@ -9,52 +27,78 @@ import { ShopifyService } from '../../../core/services/shopify';
   imports: [CommonModule],
   template: `
     <section
-      class="relative overflow-hidden bg-slate-900 text-slate-100 py-16 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-800"
+      class="relative overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 py-16 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-200 dark:border-slate-800 transition-colors duration-200"
     >
       <!-- Ambient Background Glows -->
       <div
         aria-hidden="true"
-        class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"
+        class="absolute -top-40 -left-40 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/20 rounded-full blur-3xl pointer-events-none"
       ></div>
       <div
         aria-hidden="true"
-        class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"
+        class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"
       ></div>
 
       <div
         class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10"
       >
-        <!-- Left Column: Copy, CTAs, and Trust Indicators -->
+        <!-- Left Column: Synchronized Carousel Copy & Dual CTAs -->
         <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
-          <!-- Category Pill -->
-          <!--  <div
-            class="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm"
-          >
-            <span class="flex h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
-            <span class="text-xs font-semibold text-slate-200 uppercase tracking-wider">
-              Smart Products • Everyday Solutions
-            </span>
-          </div> -->
-
-          <!-- Headline -->
-          <h1
-            class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight sm:leading-tight"
-          >
-            Practical Tools Designed to Make Daily Tasks
-            <span
-              class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-sky-400 mt-1"
+          <!-- Slide Pill & Progress Controls -->
+          <div class="flex items-center justify-center lg:justify-start gap-3">
+            <div
+              class="inline-flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm transition-colors duration-200"
             >
-              Easier, Faster &amp; Better.
-            </span>
-          </h1>
+              <span
+                class="flex h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"
+              ></span>
+              <span
+                class="text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider"
+              >
+                {{ activeSlide().tagline }}
+              </span>
+            </div>
 
-          <!-- Supporting Copy -->
-          <p
-            class="text-slate-300 text-md sm:text-lg lg:text-2xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0"
-          >
-            Eliminate daily friction with intelligent gadgets, automated home gear, and practical
-            productivity devices engineered for seamless convenience.
-          </p>
+            <!-- Carousel Indicators -->
+            <div class="flex items-center gap-1.5 ml-2">
+              @for (slide of slides(); track $index) {
+                <button
+                  (click)="setSlide($index)"
+                  [class.w-6]="currentIndex() === $index"
+                  [class.bg-blue-600]="currentIndex() === $index"
+                  [class.dark:bg-blue-500]="currentIndex() === $index"
+                  [class.w-2]="currentIndex() !== $index"
+                  [class.bg-slate-300]="currentIndex() !== $index"
+                  [class.dark:bg-slate-700]="currentIndex() !== $index"
+                  class="h-2 rounded-full transition-all duration-300 cursor-pointer"
+                  [attr.aria-label]="'Go to slide ' + ($index + 1)"
+                ></button>
+              }
+            </div>
+          </div>
+
+          <!-- Dynamic Headline Area (Fixed Min-Height Prevents CLS Layout Shift) -->
+          <div class="min-h-[140px] sm:min-h-[160px] flex items-center">
+            <h1
+              class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-tight transition-opacity duration-500"
+            >
+              {{ activeSlide().headline }}
+              <span
+                class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
+              >
+                {{ activeSlide().highlightText }}
+              </span>
+            </h1>
+          </div>
+
+          <!-- Dynamic Description Area -->
+          <div class="min-h-[72px] sm:min-h-[64px] flex items-center">
+            <p
+              class="text-slate-600 dark:text-slate-300 text-md sm:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0 transition-opacity duration-500"
+            >
+              {{ activeSlide().description }}
+            </p>
+          </div>
 
           <!-- Dual CTAs -->
           <div
@@ -76,8 +120,8 @@ import { ShopifyService } from '../../../core/services/shopify';
             </a>
 
             <a
-              href="#why-us"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 border border-slate-700 font-semibold px-7 py-4 rounded-xl transition-all duration-200 text-md"
+              href="#faq"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700/90 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold px-7 py-4 rounded-xl transition-all duration-200 text-md shadow-sm"
             >
               How It Works
             </a>
@@ -85,87 +129,101 @@ import { ShopifyService } from '../../../core/services/shopify';
 
           <!-- Trust Badges -->
           <div
-            class="pt-6 border-t border-slate-800/80 grid grid-cols-3 gap-4 text-center lg:text-left max-w-lg mx-auto lg:mx-0"
+            class="pt-6 border-t border-slate-200 dark:border-slate-800/80 grid grid-cols-3 gap-4 text-center lg:text-left max-w-lg mx-auto lg:mx-0 transition-colors duration-200"
           >
             <div>
               <div
-                class="flex items-center justify-center lg:justify-start gap-1 text-amber-400 text-sm font-bold"
+                class="flex items-center justify-center lg:justify-start gap-1 text-amber-500 dark:text-amber-400 text-sm font-bold"
               >
                 <span>★</span> 4.9/5
               </div>
-              <p class="text-xs text-slate-400 mt-0.5">2,400+ Verified Buyers</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                2,400+ Verified Buyers
+              </p>
             </div>
 
             <div>
-              <div class="text-sm font-bold text-slate-200">30 Days</div>
-              <p class="text-xs text-slate-400 mt-0.5">Risk-Free Guarantee</p>
+              <div class="text-sm font-bold text-slate-900 dark:text-slate-200">30 Days</div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Risk-Free Guarantee</p>
             </div>
 
             <div>
-              <div class="text-sm font-bold text-slate-200">Direct Delivery</div>
-              <p class="text-xs text-slate-400 mt-0.5">Tracked Express Shipping</p>
+              <div class="text-sm font-bold text-slate-900 dark:text-slate-200">
+                Direct Delivery
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Tracked Express Shipping
+              </p>
             </div>
           </div>
         </div>
 
-        <!-- Right Column: Product Showcase Visual Area -->
+        <!-- Right Column: Product Showcase Synchronized Card -->
         <div class="lg:col-span-5 flex justify-center">
           <div class="relative w-full max-w-md">
             <!-- Glow Outline -->
             <div
               aria-hidden="true"
-              class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-30"
+              class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
             ></div>
 
-            <!-- Main Product Visual Card -->
+            <!-- Synchronized Product Card -->
             <div
-              class="relative bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 shadow-2xl backdrop-blur-xl"
+              class="relative bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-200"
             >
-              @if (product()) {
+              @if (activeSlide().product) {
                 <div class="space-y-4">
                   <!-- Product Image Container -->
                   <div
-                    class="relative h-64 w-full bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-slate-800"
+                    class="relative h-64 w-full bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-800 transition-colors duration-200"
                   >
-                    @if (product()?.images?.edges?.[0]?.node?.url) {
+                    @if (getSlideImageUrl(activeSlide().product)) {
                       <img
-                        [src]="product().images.edges[0].node.url"
-                        [alt]="product().title || 'Product Image'"
+                        [src]="getSlideImageUrl(activeSlide().product)"
+                        [alt]="activeSlide().product?.title || 'Product Image'"
                         class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                         loading="eager"
                       />
                     } @else {
-                      <div class="text-slate-500 text-xs">Shopify Product Preview</div>
+                      <div class="text-slate-400 dark:text-slate-500 text-xs">
+                        Shopify Product Preview
+                      </div>
                     }
 
                     <span
                       class="absolute top-3 right-3 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow"
                     >
-                      Top Daily Pick
+                      Top Pick #{{ currentIndex() + 1 }}
                     </span>
                   </div>
 
                   <!-- Product Info -->
                   <div>
-                    <h3 class="text-lg font-bold text-white line-clamp-1">
-                      {{ product()?.title }}
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
+                      {{ activeSlide().product?.title }}
                     </h3>
-                    <p class="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
-                      {{ product()?.description }}
+                    <p
+                      class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed"
+                    >
+                      {{ activeSlide().product?.description }}
                     </p>
                   </div>
 
-                  <!-- Price & Action -->
-                  <div class="flex items-center justify-between pt-2 border-t border-slate-700/60">
+                  <!-- Price & In-App Cart Action -->
+                  <div
+                    class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 transition-colors duration-200"
+                  >
                     <div>
-                      <span class="text-xs text-slate-400 block">Retail Price</span>
-                      <span class="text-2xl font-black text-white">
-                        {{ formatPrice(product()?.variants?.edges?.[0]?.node?.price) }}
+                      <span class="text-xs text-slate-500 dark:text-slate-400 block"
+                        >Retail Price</span
+                      >
+                      <span class="text-2xl font-black text-slate-900 dark:text-white">
+                        {{ formatPrice(activeSlide().product?.variants?.edges?.[0]?.node?.price) }}
                       </span>
                     </div>
 
                     <button
-                      (click)="addToCart(getVariantId(product()))"
+                      (click)="addToCart(getVariantId(activeSlide().product))"
                       [disabled]="isAdding()"
                       class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
                     >
@@ -176,10 +234,10 @@ import { ShopifyService } from '../../../core/services/shopify';
               } @else {
                 <!-- Skeleton Loader -->
                 <div class="space-y-4 animate-pulse py-4">
-                  <div class="h-60 bg-slate-700/50 rounded-xl w-full"></div>
-                  <div class="h-4 bg-slate-700/50 rounded w-3/4"></div>
-                  <div class="h-3 bg-slate-700/50 rounded w-1/2"></div>
-                  <div class="h-10 bg-slate-700/50 rounded w-full mt-4"></div>
+                  <div class="h-60 bg-slate-200 dark:bg-slate-700/50 rounded-xl w-full"></div>
+                  <div class="h-4 bg-slate-200 dark:bg-slate-700/50 rounded w-3/4"></div>
+                  <div class="h-3 bg-slate-200 dark:bg-slate-700/50 rounded w-1/2"></div>
+                  <div class="h-10 bg-slate-200 dark:bg-slate-700/50 rounded w-full mt-4"></div>
                 </div>
               }
             </div>
@@ -189,28 +247,90 @@ import { ShopifyService } from '../../../core/services/shopify';
     </section>
   `,
 })
-export class HeroComponent implements OnInit {
+export class HeroComponent implements OnInit, OnDestroy {
   private shopifyService = inject(ShopifyService);
+  public cartService = inject(CartService);
+  private platformId = inject(PLATFORM_ID);
 
   @Output() onCartUpdated = new EventEmitter<void>();
 
-  featuredProduct = signal<any>(null);
+  currentIndex = signal<number>(0);
   isAdding = signal<boolean>(false);
+  private intervalId: any = null;
 
-  // Helper accessor for safer signal reading in templates
-  get product() {
-    return this.featuredProduct;
-  }
+  slides = signal<HeroSlide[]>([
+    {
+      tagline: 'Smart Products • Everyday Solutions',
+      headline: 'Practical Tools Designed to Make Daily Tasks',
+      highlightText: 'Easier, Faster & Better.',
+      description:
+        'Eliminate daily friction with intelligent gadgets, automated home gear, and practical productivity devices engineered for seamless convenience.',
+    },
+    {
+      tagline: 'Premium Performance • Zero Hassle',
+      headline: 'Next-Gen Hardware Engineered For',
+      highlightText: 'Uncompromised Efficiency.',
+      description:
+        'Upgrade your workspace with direct-sourced electronics and high-durability accessories built to perform under pressure.',
+    },
+    {
+      tagline: 'Trending Hardware • Express Shipping',
+      headline: 'Curated Electronics Sourced Directly For',
+      highlightText: 'Modern Connected Homes.',
+      description:
+        'Enjoy verified product accuracy, fast global fulfillment, and strict quality checks on every dispatch.',
+    },
+  ]);
+
+  activeSlide = computed(() => this.slides()[this.currentIndex()]);
 
   async ngOnInit(): Promise<void> {
     try {
-      const products = await this.shopifyService.getProducts();
+      const products = await this.shopifyService.getProducts(3);
       if (products && products.length > 0) {
-        this.featuredProduct.set(products[0]);
+        this.slides.update((currentSlides) =>
+          currentSlides.map((slide, index) => ({
+            ...slide,
+            product: products[index % products.length],
+          })),
+        );
       }
     } catch (err) {
-      console.error('Failed to load hero shopify product:', err);
+      console.error('Failed to load hero shopify products:', err);
     }
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.startAutoplay();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoplay();
+  }
+
+  private startAutoplay(): void {
+    this.stopAutoplay();
+    this.intervalId = setInterval(() => {
+      this.currentIndex.update((idx) => (idx + 1) % this.slides().length);
+    }, 6000);
+  }
+
+  private stopAutoplay(): void {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  setSlide(index: number): void {
+    this.currentIndex.set(index);
+    if (isPlatformBrowser(this.platformId)) {
+      this.startAutoplay();
+    }
+  }
+
+  getSlideImageUrl(item: any): string | null {
+    return item?.images?.edges?.[0]?.node?.url || null;
   }
 
   getVariantId(item: any): string {
@@ -230,7 +350,8 @@ export class HeroComponent implements OnInit {
     if (!variantId) return;
     this.isAdding.set(true);
     try {
-      await this.shopifyService.addToCart(variantId);
+      await this.cartService.addToCart(variantId, 1);
+      this.cartService.openDrawer();
       this.onCartUpdated.emit();
     } catch (err) {
       console.error('Hero add-to-cart failed:', err);
