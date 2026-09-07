@@ -12,6 +12,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ShopifyService } from '../../../core/services/shopify';
 import { CartService } from '../../../core/services/cart';
+import { CurrencyService } from '../../../core/services/currency';
 
 interface HeroSlide {
   tagline: string;
@@ -46,19 +47,6 @@ interface HeroSlide {
         <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
           <!-- Slide Pill & Progress Controls -->
           <div class="flex items-center justify-center lg:justify-start gap-3">
-            <!-- <div
-              class="inline-flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm transition-colors duration-200"
-            >
-              <span
-                class="flex h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"
-              ></span>
-              <span
-                class="text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider"
-              >
-                {{ activeSlide().tagline }}
-              </span>
-            </div> -->
-
             <!-- Carousel Indicators -->
             <div class="flex items-center gap-2 ml-2">
               @for (slide of slides(); track $index) {
@@ -77,14 +65,14 @@ interface HeroSlide {
             </div>
           </div>
 
-          <!-- Dynamic Headline Area (Fixed Min-Height Prevents CLS Layout Shift) -->
-          <div class="min-h-35 sm:min-h-40 flex items-center">
+          <!-- Dynamic Headline Area -->
+          <div class="min-h-[140px] sm:min-h-[160px] flex items-center">
             <h1
               class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-tight transition-opacity duration-500"
             >
               {{ activeSlide().headline }}
               <span
-                class="block text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
+                class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
               >
                 {{ activeSlide().highlightText }}
               </span>
@@ -92,7 +80,7 @@ interface HeroSlide {
           </div>
 
           <!-- Dynamic Description Area -->
-          <div class="min-h-18 sm:min-h-16 flex items-center">
+          <div class="min-h-[72px] sm:min-h-[64px] flex items-center">
             <p
               class="text-slate-600 dark:text-slate-300 text-md sm:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0 transition-opacity duration-500"
             >
@@ -164,7 +152,7 @@ interface HeroSlide {
             <!-- Glow Outline -->
             <div
               aria-hidden="true"
-              class="absolute -inset-1 bg-linear-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
+              class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
             ></div>
 
             <!-- Synchronized Product Card -->
@@ -218,7 +206,11 @@ interface HeroSlide {
                         >Retail Price</span
                       >
                       <span class="text-2xl font-black text-slate-900 dark:text-white">
-                        {{ formatPrice(activeSlide().product?.variants?.edges?.[0]?.node?.price) }}
+                        {{
+                          currencyService.formatPrice(
+                            activeSlide().product?.variants?.edges?.[0]?.node?.price
+                          )
+                        }}
                       </span>
                     </div>
 
@@ -250,6 +242,7 @@ interface HeroSlide {
 export class HeroComponent implements OnInit, OnDestroy {
   private shopifyService = inject(ShopifyService);
   public cartService = inject(CartService);
+  public currencyService = inject(CurrencyService);
   private platformId = inject(PLATFORM_ID);
 
   @Output() onCartUpdated = new EventEmitter<void>();
@@ -335,15 +328,6 @@ export class HeroComponent implements OnInit, OnDestroy {
 
   getVariantId(item: any): string {
     return item?.variants?.edges?.[0]?.node?.id || '';
-  }
-
-  formatPrice(priceObj: { amount: string; currencyCode: string } | undefined): string {
-    if (!priceObj || !priceObj.amount) return '$0.00';
-    const amount = parseFloat(priceObj.amount);
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: priceObj.currencyCode || 'USD',
-    }).format(amount);
   }
 
   async addToCart(variantId: string): Promise<void> {

@@ -1,170 +1,83 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Product, ProductVariant } from '../../../core/models/shopify.model';
 import { CartService } from '../../../core/services/cart';
+import { CurrencyService } from '../../../core/services/currency';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
   imports: [CommonModule],
   template: `
-    @if (product) {
-      <div
-        (click)="onCardClick()"
-        class="group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-blue-500/50 transition-all duration-300 cursor-pointer h-full"
-      >
-        <!-- Top Image & Badges Container -->
-        <div class="relative w-full h-60 bg-slate-100 dark:bg-slate-900 overflow-hidden">
-          @if (mainImageUrl) {
+    <div
+      (click)="selectProduct.emit(product)"
+      class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between hover:border-blue-500 transition-all duration-300 cursor-pointer shadow-sm group"
+    >
+      <div>
+        <div
+          class="relative w-full h-48 bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden mb-4"
+        >
+          @if (getImageUrl()) {
             <img
-              [src]="mainImageUrl"
+              [src]="getImageUrl()"
               [alt]="product.title"
-              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-          } @else {
-            <div
-              class="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium"
-            >
-              No Preview Image
-            </div>
-          }
-
-          @if (discountPercentage > 0) {
-            <span
-              class="absolute top-3 left-3 bg-red-600 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md"
-            >
-              Save {{ discountPercentage }}%
-            </span>
-          }
-
-          @if (!defaultVariant?.availableForSale) {
-            <span
-              class="absolute top-3 right-3 bg-slate-900/90 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase backdrop-blur-sm"
-            >
-              Sold Out
-            </span>
           }
         </div>
 
-        <!-- Content Area -->
-        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <h3
-              class="text-slate-900 dark:text-white font-bold text-base line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-            >
-              {{ product.title }}
-            </h3>
-            <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed line-clamp-2 mt-1">
-              {{ product.description }}
-            </p>
-          </div>
-
-          <!-- Pricing & Direct Actions -->
-          <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-3">
-            <div class="flex items-baseline gap-2">
-              <span class="text-xl font-black text-slate-900 dark:text-white">
-                {{ formatPrice(defaultVariant?.price) }}
-              </span>
-
-              @if (defaultVariant?.compareAtPrice?.amount) {
-                <span class="text-xs text-slate-400 line-through font-medium">
-                  {{ formatPrice(defaultVariant?.compareAtPrice) }}
-                </span>
-              }
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="grid grid-cols-2 gap-2" (click)="$event.stopPropagation()">
-              <!-- Add to Cart (Opens In-App Cart Drawer) -->
-              <button
-                (click)="onAddToCart()"
-                [disabled]="isAdding() || !defaultVariant?.availableForSale"
-                class="w-full bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold py-2.5 px-3 rounded-xl transition-all disabled:opacity-50 cursor-pointer text-center"
-              >
-                {{ isAdding() ? 'Adding...' : 'Add to Cart' }}
-              </button>
-
-              <!-- Buy Now (Adds & Opens Cart Drawer Directly) -->
-              <button
-                (click)="onBuyNow()"
-                [disabled]="isBuying() || !defaultVariant?.availableForSale"
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 cursor-pointer text-center"
-              >
-                {{ isBuying() ? 'Buying...' : 'Buy Now' }}
-              </button>
-            </div>
-          </div>
-        </div>
+        <h3
+          class="font-bold text-slate-900 dark:text-white text-base truncate group-hover:text-blue-600 transition-colors"
+        >
+          {{ product.title }}
+        </h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 mt-1">
+          {{ product.description }}
+        </p>
       </div>
-    }
+
+      <div
+        class="pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between mt-4"
+      >
+        <div>
+          <span class="text-xs text-slate-400 block">Price</span>
+          <span class="text-lg font-black text-slate-900 dark:text-white">
+            {{ currencyService.formatPrice(product) }}
+          </span>
+        </div>
+        <button
+          (click)="$event.stopPropagation(); addToCart()"
+          [disabled]="isAdding"
+          class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md cursor-pointer disabled:opacity-50"
+        >
+          {{ isAdding ? 'Adding...' : 'Add to Cart' }}
+        </button>
+      </div>
+    </div>
   `,
 })
 export class ProductCardComponent {
-  public cartService = inject(CartService);
+  @Input({ required: true }) product!: any;
+  @Output() selectProduct = new EventEmitter<any>();
 
-  @Input({ required: true }) product!: Product;
-  @Output() selectProduct = new EventEmitter<Product>();
+  public currencyService = inject(CurrencyService);
+  private cartService = inject(CartService);
 
-  isAdding = signal<boolean>(false);
-  isBuying = signal<boolean>(false);
+  isAdding = false;
 
-  get defaultVariant(): ProductVariant | undefined {
-    return this.product?.variants?.edges?.[0]?.node;
-  }
-
-  get mainImageUrl(): string | null {
+  getImageUrl(): string | null {
     return this.product?.images?.edges?.[0]?.node?.url || null;
   }
 
-  get discountPercentage(): number {
-    const price = parseFloat(this.defaultVariant?.price?.amount || '0');
-    const compareAt = parseFloat(this.defaultVariant?.compareAtPrice?.amount || '0');
-
-    if (compareAt > price) {
-      return Math.round(((compareAt - price) / compareAt) * 100);
-    }
-    return 0;
-  }
-
-  formatPrice(priceObj: any): string {
-    if (!priceObj || !priceObj.amount) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: priceObj.currencyCode || 'USD',
-    }).format(parseFloat(priceObj.amount));
-  }
-
-  onCardClick(): void {
-    this.selectProduct.emit(this.product);
-  }
-
-  async onAddToCart(): Promise<void> {
-    const variantId = this.defaultVariant?.id;
+  async addToCart(): Promise<void> {
+    const variantId = this.product?.variants?.edges?.[0]?.node?.id || '';
     if (!variantId) return;
 
-    this.isAdding.set(true);
-    try {
-      await this.cartService.addToCart(variantId, 1);
-    } catch (err: unknown) {
-      console.error('Failed to add item to cart:', err);
-    } finally {
-      this.isAdding.set(false);
-    }
-  }
-
-  async onBuyNow(): Promise<void> {
-    const variantId = this.defaultVariant?.id;
-    if (!variantId) return;
-
-    this.isBuying.set(true);
+    this.isAdding = true;
     try {
       await this.cartService.addToCart(variantId, 1);
       this.cartService.openDrawer();
-    } catch (err: unknown) {
-      console.error('Buy Now cart error:', err);
     } finally {
-      this.isBuying.set(false);
+      this.isAdding = false;
     }
   }
 }

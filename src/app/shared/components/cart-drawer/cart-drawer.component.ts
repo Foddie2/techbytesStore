@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../../core/services/cart';
+import { CurrencyService } from '../../../core/services/currency';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -142,7 +143,7 @@ import { CartService } from '../../../core/services/cart';
 
                           <div class="flex justify-between items-center mt-2">
                             <span class="font-extrabold text-sm">
-                              {{ formatPrice(item.price) }}
+                              {{ currencyService.formatPrice(item.price) }}
                             </span>
 
                             <div
@@ -279,7 +280,7 @@ import { CartService } from '../../../core/services/cart';
                 <div class="flex justify-between items-center text-sm font-bold">
                   <span class="text-slate-500 dark:text-slate-400">Subtotal</span>
                   <span class="text-xl font-black">
-                    {{ formatPrice(cartService.cart()?.subtotal) }}
+                    {{ currencyService.formatPrice(cartService.cart()?.subtotal) }}
                   </span>
                 </div>
 
@@ -301,6 +302,7 @@ import { CartService } from '../../../core/services/cart';
 })
 export class CartDrawerComponent {
   public cartService = inject(CartService);
+  public currencyService = inject(CurrencyService);
 
   step = signal<'cart' | 'shipping'>('cart');
 

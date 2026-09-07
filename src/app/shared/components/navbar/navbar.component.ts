@@ -1,47 +1,11 @@
-import { Component, Injectable, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { Component, signal, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+
+// Core Services
 import { CartService } from '../../../core/services/cart';
-
-@Injectable({ providedIn: 'root' })
-export class ThemeService {
-  private readonly platformId = inject(PLATFORM_ID);
-  readonly isDarkMode = signal(false);
-
-  constructor() {
-    this.initTheme();
-  }
-
-  private initTheme(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-
-      this.isDarkMode.set(isDark);
-      this.applyTheme(isDark);
-    }
-  }
-
-  toggleDarkMode(): void {
-    const nextState = !this.isDarkMode();
-    this.isDarkMode.set(nextState);
-
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('theme', nextState ? 'dark' : 'light');
-      this.applyTheme(nextState);
-    }
-  }
-
-  private applyTheme(isDark: boolean): void {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }
-}
+import { ThemeService } from '../../../core/services/theme';
+import { LanguageService } from '../../../core/services/language';
 
 @Component({
   selector: 'app-navbar',
@@ -67,13 +31,13 @@ export class ThemeService {
             </a>
             <span class="text-slate-300 dark:text-slate-700">|</span>
 
-            <!-- Language Switcher -->
+            <!-- Language Selector Dropdown -->
             <div class="relative">
               <button
                 (click)="isLangOpen.set(!isLangOpen())"
                 class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 font-medium cursor-pointer"
               >
-                🌐 {{ selectedLang() }}
+                🌐 {{ languageService.selectedLang() }}
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
@@ -86,25 +50,25 @@ export class ThemeService {
 
               @if (isLangOpen()) {
                 <div
-                  class="absolute right-0 mt-2 w-24 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg py-1 z-50"
+                  class="absolute right-0 mt-2 w-32 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg py-1 z-50"
                 >
                   <button
                     (click)="selectLang('EN')"
-                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer"
+                    class="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold cursor-pointer"
                   >
-                    English
+                    English (EN)
                   </button>
                   <button
                     (click)="selectLang('ES')"
-                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer"
+                    class="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold cursor-pointer"
                   >
-                    Español
+                    Español (ES)
                   </button>
                   <button
                     (click)="selectLang('FR')"
-                    class="w-full text-left px-3 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer"
+                    class="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold cursor-pointer"
                   >
-                    Français
+                    Français (FR)
                   </button>
                 </div>
               }
@@ -173,7 +137,6 @@ export class ThemeService {
 
         <!-- Actions: Cart Trigger & Mobile Toggle -->
         <div class="flex items-center gap-3">
-          <!-- In-App Slide-Over Cart Trigger -->
           <button
             (click)="cartService.openDrawer()"
             class="relative p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer"
@@ -196,7 +159,6 @@ export class ThemeService {
             }
           </button>
 
-          <!-- Mobile Hamburger Button -->
           <button
             (click)="isMobileOpen.set(!isMobileOpen())"
             class="md:hidden p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 cursor-pointer"
@@ -218,115 +180,6 @@ export class ThemeService {
         class="hidden md:block bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200/60 dark:border-slate-800 text-sm"
       >
         <div class="max-w-7xl mx-auto px-4 lg:px-8 flex items-center gap-8 h-11">
-          <!-- Mega Menu Trigger -->
-          <div class="relative group" (mouseleave)="isMegaOpen.set(false)">
-            <button
-              (mouseenter)="isMegaOpen.set(true)"
-              class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 h-11 cursor-pointer"
-            >
-              Shop Menu
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-
-            @if (isMegaOpen()) {
-              <div
-                class="absolute left-0 top-11 w-150 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-b-xl shadow-xl p-6 grid grid-cols-3 gap-6 z-50"
-              >
-                <div>
-                  <h4 class="font-bold text-slate-900 dark:text-white mb-2">Electronics</h4>
-                  <ul class="space-y-2 text-slate-600 dark:text-slate-300">
-                    <li>
-                      <a
-                        routerLink="/products"
-                        [queryParams]="{ category: 'Laptops' }"
-                        class="hover:text-blue-600"
-                      >
-                        Laptops
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        routerLink="/products"
-                        [queryParams]="{ category: 'Smartphones' }"
-                        class="hover:text-blue-600"
-                      >
-                        Smartphones
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        routerLink="/products"
-                        [queryParams]="{ category: 'Headphones' }"
-                        class="hover:text-blue-600"
-                      >
-                        Headphones
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 class="font-bold text-slate-900 dark:text-white mb-2">Accessories</h4>
-                  <ul class="space-y-2 text-slate-600 dark:text-slate-300">
-                    <li>
-                      <a
-                        routerLink="/products"
-                        [queryParams]="{ category: 'Monitors' }"
-                        class="hover:text-blue-600"
-                      >
-                        Monitors
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        routerLink="/products"
-                        [queryParams]="{ category: 'Keyboards' }"
-                        class="hover:text-blue-600"
-                      >
-                        Keyboards
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        routerLink="/products"
-                        [queryParams]="{ category: 'Chargers' }"
-                        class="hover:text-blue-600"
-                      >
-                        Chargers
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div
-                  class="bg-blue-50 dark:bg-slate-700/50 p-4 rounded-lg flex flex-col justify-between"
-                >
-                  <div>
-                    <span class="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase">
-                      Featured
-                    </span>
-                    <h5 class="font-semibold text-slate-900 dark:text-white mt-1">
-                      New M3 Laptops
-                    </h5>
-                  </div>
-                  <a
-                    routerLink="/products"
-                    [queryParams]="{ q: 'M3' }"
-                    class="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Shop Now →
-                  </a>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Categories Dropdown Trigger -->
           <div class="relative" (mouseleave)="isCatOpen.set(false)">
             <button
               (mouseenter)="isCatOpen.set(true)"
@@ -350,42 +203,36 @@ export class ThemeService {
                   routerLink="/products"
                   [queryParams]="{ category: 'Hardware' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  >Hardware</a
                 >
-                  Hardware
-                </a>
                 <a
                   routerLink="/products"
                   [queryParams]="{ category: 'Software' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  >Software</a
                 >
-                  Software
-                </a>
                 <a
                   routerLink="/products"
                   [queryParams]="{ category: 'Networking' }"
                   class="block px-4 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  >Networking</a
                 >
-                  Networking
-                </a>
               </div>
             }
           </div>
 
-          <!-- Standard Navigation Links -->
           <a
             routerLink="/best-sellers"
             routerLinkActive="text-blue-600 font-semibold"
             class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
+            >Best Sellers</a
           >
-            Best Sellers
-          </a>
           <a
             routerLink="/new-arrivals"
             routerLinkActive="text-blue-600 font-semibold"
             class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
+            >New Arrivals</a
           >
-            New Arrivals
-          </a>
         </div>
       </nav>
 
@@ -394,7 +241,6 @@ export class ThemeService {
         <div
           class="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 pt-3 pb-6 space-y-4"
         >
-          <!-- Search Bar (Mobile) -->
           <div class="relative w-full">
             <input
               type="text"
@@ -418,58 +264,39 @@ export class ThemeService {
               </svg>
             </button>
           </div>
-
           <div class="flex flex-col gap-3 font-medium text-slate-700 dark:text-slate-200">
             <a routerLink="/" (click)="isMobileOpen.set(false)" class="py-1">Home</a>
             <a routerLink="/products" (click)="isMobileOpen.set(false)" class="py-1">Shop All</a>
-            <a routerLink="/best-sellers" (click)="isMobileOpen.set(false)" class="py-1">
-              Best Sellers
-            </a>
-            <a routerLink="/new-arrivals" (click)="isMobileOpen.set(false)" class="py-1">
-              New Arrivals
-            </a>
+            <a routerLink="/best-sellers" (click)="isMobileOpen.set(false)" class="py-1"
+              >Best Sellers</a
+            >
             <a
               routerLink="/track-order"
               (click)="isMobileOpen.set(false)"
               class="py-1 text-slate-500"
+              >Track Order</a
             >
-              Track Order
-            </a>
           </div>
         </div>
       }
     </header>
   `,
 })
-export class Navbar implements OnInit {
+export class Navbar {
   private router = inject(Router);
-  private platformId = inject(PLATFORM_ID);
+
   public cartService = inject(CartService);
   public themeService = inject(ThemeService);
+  public languageService: LanguageService = inject(LanguageService);
 
   isMobileOpen = signal<boolean>(false);
-  isMegaOpen = signal<boolean>(false);
   isCatOpen = signal<boolean>(false);
   isLangOpen = signal<boolean>(false);
-  selectedLang = signal<string>('EN');
   searchQuery = signal<string>('');
 
-  ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const savedLang = localStorage.getItem('lang');
-      if (savedLang) {
-        this.selectedLang.set(savedLang);
-      }
-    }
-  }
-
   selectLang(lang: string): void {
-    this.selectedLang.set(lang);
+    this.languageService.setLanguage(lang);
     this.isLangOpen.set(false);
-
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('lang', lang);
-    }
   }
 
   onSearch(): void {

@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject, ElementRef, ViewChild } fr
 import { CommonModule } from '@angular/common';
 import { ShopifyService } from '../../core/services/shopify';
 import { CartService } from '../../core/services/cart';
+import { CurrencyService } from '../../core/services/currency';
 import { HeroComponent } from '../../shared/components/hero/hero.component';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 
@@ -99,7 +100,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         }
       </section>
 
-      <!-- NEW SECTION: Top Selling Items (High Converting Dropshipping Showcase) -->
+      <!-- Top Selling Items Showcase -->
       <section class="max-w-7xl mx-auto px-4">
         <div
           class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-800 text-white shadow-2xl"
@@ -165,7 +166,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                   <div>
                     <span class="text-xs text-slate-400 block">Price</span>
                     <span class="text-lg font-black text-white">
-                      {{ formatPrice(product.variants?.edges?.[0]?.node?.price) }}
+                      {{ currencyService.formatPrice(getProductPrice(product)) }}
                     </span>
                   </div>
                   <button
@@ -235,7 +236,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         </div>
       </section>
 
-      <!-- Top Rated Hardware (Infinite Horizontal Marquee Scroll) -->
+      <!-- Top Rated Hardware (Marquee Scroll) -->
       <section class="max-w-7xl mx-auto px-4 overflow-hidden">
         <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-6">
           Top Rated Hardware
@@ -266,7 +267,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                     {{ product.title }}
                   </h4>
                   <p class="text-xs font-bold text-blue-600 mt-1">
-                    {{ formatPrice(product.variants?.edges?.[0]?.node?.price) }}
+                    {{ currencyService.formatPrice(getProductPrice(product)) }}
                   </p>
                   <span class="text-xs text-slate-500 dark:text-slate-400 underline mt-2 block">
                     Quick View →
@@ -320,7 +321,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       </section>
     </div>
 
-    <!-- PRODUCT DETAILS MODAL (Multi-Image Gallery & Smart Related Products) -->
+    <!-- PRODUCT DETAILS MODAL -->
     @if (selectedProduct()) {
       <div
         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
@@ -340,7 +341,6 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <!-- Image Gallery Column -->
             <div class="space-y-3">
-              <!-- Active Image Display -->
               <div
                 class="w-full h-72 bg-slate-100 dark:bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-200/50 dark:border-slate-800"
               >
@@ -355,7 +355,6 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                 }
               </div>
 
-              <!-- Thumbnails Carousel/Row -->
               @if (getModalImages(selectedProduct()).length > 1) {
                 <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                   @for (imgUrl of getModalImages(selectedProduct()); track $index) {
@@ -375,7 +374,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
               }
             </div>
 
-            <!-- Details & Actions Column -->
+            <!-- Details Column -->
             <div class="space-y-4">
               <div>
                 <span
@@ -389,11 +388,15 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
 
               <div class="flex items-baseline gap-3">
                 <span class="text-2xl font-black text-slate-900 dark:text-white">
-                  {{ formatPrice(selectedProduct().variants?.edges?.[0]?.node?.price) }}
+                  {{ currencyService.formatPrice(getProductPrice(selectedProduct())) }}
                 </span>
                 @if (selectedProduct().variants?.edges?.[0]?.node?.compareAtPrice?.amount) {
                   <span class="text-sm text-slate-400 line-through">
-                    {{ formatPrice(selectedProduct().variants?.edges?.[0]?.node?.compareAtPrice) }}
+                    {{
+                      currencyService.formatPrice(
+                        selectedProduct().variants?.edges?.[0]?.node?.compareAtPrice
+                      )
+                    }}
                   </span>
                 }
               </div>
@@ -404,7 +407,6 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                 {{ selectedProduct().description }}
               </p>
 
-              <!-- Modal In-App Cart CTA -->
               <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
                 <button
                   (click)="addProductToCart(selectedProduct())"
@@ -447,7 +449,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                     {{ related.title }}
                   </h5>
                   <p class="text-xs text-blue-600 dark:text-blue-400 font-bold mt-1">
-                    {{ formatPrice(related.variants?.edges?.[0]?.node?.price) }}
+                    {{ currencyService.formatPrice(getProductPrice(related)) }}
                   </p>
                 </div>
               }
@@ -485,6 +487,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
 export class HomeComponent implements OnInit {
   private shopifyService = inject(ShopifyService);
   public cartService = inject(CartService);
+  public currencyService = inject(CurrencyService);
 
   @ViewChild('featuredContainer') featuredContainer!: ElementRef<HTMLDivElement>;
 
@@ -496,12 +499,10 @@ export class HomeComponent implements OnInit {
 
   topBrands: string[] = ['Apple', 'Samsung', 'Sony', 'Logitech', 'Asus', 'Dell'];
 
-  // Top Selling Products computed slice
   topSellingProducts = computed(() => {
     return this.products().slice(0, 4);
   });
 
-  // Currently displayed modal image URL
   activeModalImage = computed(() => {
     const prod = this.selectedProduct();
     if (!prod) return null;
@@ -540,22 +541,23 @@ export class HomeComponent implements OnInit {
     this.selectedProduct.set(null);
   }
 
-  /**
-   * Extracts all image URLs from a Shopify Product object
-   */
   getModalImages(product: any): string[] {
     if (!product?.images?.edges) return [];
     return product.images.edges.map((edge: any) => edge.node.url);
   }
 
   /**
-   * Smart Related Products Engine: Matches product title keywords (brands/types like Dell, Headset, Phone)
+   * Safely retrieves Shopify GraphQL price object from product or variant node
    */
+  getProductPrice(product: any): { amount: string; currencyCode: string } | null {
+    if (!product) return null;
+    return product.variants?.edges?.[0]?.node?.price || product.price || null;
+  }
+
   getSmartRelatedProducts(currentProduct: any): any[] {
     if (!currentProduct) return [];
     const titleLower = (currentProduct.title || '').toLowerCase();
 
-    // Key classification terms for hardware
     const terms = [
       'dell',
       'hp',
@@ -587,7 +589,6 @@ export class HomeComponent implements OnInit {
       );
     }
 
-    // Fallback if not enough matches are found
     if (matches.length < 3) {
       const remaining = this.products().filter(
         (p) => p.id !== currentProduct.id && !matches.some((m) => m.id === p.id),
@@ -599,21 +600,9 @@ export class HomeComponent implements OnInit {
   }
 
   getVariantId(product: any): string {
-    return product.variants?.edges?.[0]?.node?.id || '';
+    return product?.variants?.edges?.[0]?.node?.id || '';
   }
 
-  formatPrice(priceObj: { amount: string; currencyCode: string } | undefined): string {
-    if (!priceObj) return '$0.00';
-    const amount = parseFloat(priceObj.amount);
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: priceObj.currencyCode || 'USD',
-    }).format(amount);
-  }
-
-  /**
-   * Adds an item to the in-app CartService and pops open the Cart Drawer
-   */
   async addProductToCart(product: any): Promise<void> {
     const variantId = this.getVariantId(product);
     if (!variantId) return;
