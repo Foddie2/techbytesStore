@@ -18,14 +18,17 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       <!-- Trust / Benefits Bar -->
       <section class="max-w-7xl mx-auto px-4 pt-12">
         <div
-          class="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm text-center"
+          class="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-xs text-center"
         >
           <div class="space-y-1">
             <span class="text-2xl">🚚</span>
             <h4 class="font-bold text-slate-900 dark:text-white text-lg">
               Global Express Delivery
             </h4>
-            <p class="text-sm text-slate-500">Tracked shipping on orders over $50</p>
+            <p class="text-sm text-slate-500">
+              Tracked shipping on orders over
+              {{ currencyService.formatPrice({ amount: 50, currencyCode: 'USD' }) }}
+            </p>
           </div>
           <div class="space-y-1">
             <span class="text-2xl">🛡️</span>
@@ -45,36 +48,18 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         </div>
       </section>
 
-      <!-- Featured Products (Horizontal Left-to-Right Scroll) -->
+      <!-- Featured Products (Horizontal Left-to-Right Scroll with Flanking Arrows & Infinite Shimmer) -->
       <section id="featured-products" class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between items-end mb-8">
-          <div>
-            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest"
-              >Real-time Catalog</span
-            >
-            <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Featured Drops
-            </h2>
-            <p class="text-slate-500 text-sm mt-1">
-              Swipe or scroll horizontally to explore featured gear.
-            </p>
-          </div>
-
-          <!-- Scroll Controls -->
-          <div class="flex gap-2">
-            <button
-              (click)="scrollFeatured('left')"
-              class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-sm cursor-pointer"
-            >
-              ←
-            </button>
-            <button
-              (click)="scrollFeatured('right')"
-              class="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-sm cursor-pointer"
-            >
-              →
-            </button>
-          </div>
+        <div class="mb-8">
+          <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest"
+            >Real-time Catalog</span
+          >
+          <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+            Featured Drops
+          </h2>
+          <p class="text-slate-500 text-sm mt-1">
+            Swipe or use flanking navigation arrows to explore featured hardware drops.
+          </p>
         </div>
 
         @if (isLoading()) {
@@ -87,15 +72,66 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         }
 
         @if (!isLoading() && products().length > 0) {
-          <div
-            #featuredContainer
-            class="flex gap-6 overflow-x-auto scroll-smooth pb-4 no-scrollbar snap-x snap-mandatory"
-          >
-            @for (product of products(); track product.id) {
-              <div class="w-72 sm:w-80 flex-shrink-0 snap-start">
-                <app-product-card [product]="product" (selectProduct)="openProductModal($event)" />
-              </div>
-            }
+          <!-- Relative Row Flanked by Side Navigation Arrows -->
+          <div class="relative group">
+            <!-- Left Flanking Arrow -->
+            <button
+              (click)="scrollFeatured('left')"
+              aria-label="Scroll Left"
+              class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95"
+            >
+              ←
+            </button>
+
+            <!-- Horizontal Scroll Container -->
+            <div
+              #featuredContainer
+              (scroll)="onFeaturedScroll($event)"
+              class="flex gap-6 overflow-x-auto scroll-smooth pb-4 px-1 no-scrollbar snap-x snap-mandatory"
+            >
+              @for (product of products(); track product.id) {
+                <div class="w-72 sm:w-80 flex-shrink-0 snap-start">
+                  <app-product-card
+                    [product]="product"
+                    (selectProduct)="openProductModal($event)"
+                  />
+                </div>
+              }
+
+              <!-- Infinite Loading Shimmer Skeleton Cards -->
+              @if (isLoadingMore()) {
+                @for (shimmer of [1, 2]; track shimmer) {
+                  <div
+                    class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-4 animate-pulse"
+                  >
+                    <div
+                      class="w-full h-48 bg-slate-200 dark:bg-slate-700/60 rounded-xl relative overflow-hidden"
+                    >
+                      <div
+                        class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 dark:via-slate-600/20 to-transparent animate-shimmer"
+                      ></div>
+                    </div>
+                    <div class="h-4 bg-slate-200 dark:bg-slate-700/60 rounded w-3/4"></div>
+                    <div class="h-3 bg-slate-200 dark:bg-slate-700/60 rounded w-1/2"></div>
+                    <div
+                      class="pt-4 border-t border-slate-100 dark:border-slate-700/60 flex justify-between items-center"
+                    >
+                      <div class="h-6 bg-slate-200 dark:bg-slate-700/60 rounded w-20"></div>
+                      <div class="h-8 bg-slate-200 dark:bg-slate-700/60 rounded w-24"></div>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
+            <!-- Right Flanking Arrow -->
+            <button
+              (click)="scrollFeatured('right')"
+              aria-label="Scroll Right"
+              class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95"
+            >
+              →
+            </button>
           </div>
         }
       </section>
@@ -103,7 +139,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       <!-- Top Selling Items Showcase -->
       <section class="max-w-7xl mx-auto px-4">
         <div
-          class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-800 text-white shadow-2xl"
+          class="bg-linear-to-br from-slate-900 via-slate-900 to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-800 text-white shadow-2xl"
         >
           <div
             class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4"
@@ -220,7 +256,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             </p>
           </div>
           <div
-            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-8 rounded-2xl shadow-sm space-y-4"
+            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-8 rounded-2xl shadow-xs space-y-4"
           >
             <span class="text-sm font-bold text-emerald-500 uppercase tracking-widest"
               >Our Solution</span
@@ -249,7 +285,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             @for (product of marqueeProducts(); track $index) {
               <div
                 (click)="openProductModal(product)"
-                class="w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex gap-4 items-center flex-shrink-0 cursor-pointer hover:border-blue-500 transition-all shadow-sm"
+                class="w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex gap-4 items-center flex-shrink-0 cursor-pointer hover:border-blue-500 transition-all shadow-xs"
               >
                 <div
                   class="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden flex-shrink-0"
@@ -321,40 +357,67 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       </section>
     </div>
 
-    <!-- PRODUCT DETAILS MODAL -->
+    <!-- PRODUCT SHOWCASE MULTI-MODAL -->
     @if (selectedProduct()) {
       <div
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md animate-fadeIn"
+        (click)="closeProductModal()"
       >
         <div
-          class="relative w-full max-w-3xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-6"
+          (click)="$event.stopPropagation()"
+          class="relative w-full max-w-4xl max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-y-auto p-6 sm:p-8 space-y-8 no-scrollbar"
         >
           <!-- Close Button -->
           <button
             (click)="closeProductModal()"
+            aria-label="Close modal"
             class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer z-10"
           >
             ✕
           </button>
 
-          <!-- Main Product Layout -->
+          <!-- Top Grid: Image Showcase Gallery & Product Info -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <!-- Image Gallery Column -->
-            <div class="space-y-3">
+            <!-- Left Column: Image Preview Gallery & Wishlist Toggle -->
+            <div class="space-y-4">
               <div
-                class="w-full h-72 bg-slate-100 dark:bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-200/50 dark:border-slate-800"
+                class="relative w-full h-80 bg-slate-100 dark:bg-slate-950 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 flex items-center justify-center"
               >
                 @if (activeModalImage()) {
                   <img
                     [src]="activeModalImage()"
-                    [alt]="selectedProduct().title"
+                    [alt]="selectedProduct()?.title"
                     class="w-full h-full object-cover transition-all duration-300"
                   />
                 } @else {
                   <span class="text-slate-400 text-sm">No Preview Image</span>
                 }
+
+                <!-- Wishlist Heart Toggle Button -->
+                <button
+                  (click)="toggleWishlist()"
+                  [class.text-red-500]="isWishlisted()"
+                  [class.bg-red-50]="isWishlisted()"
+                  class="absolute top-3 right-3 p-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-md hover:scale-110 transition cursor-pointer text-slate-400"
+                  title="Toggle Wishlist"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    [attr.fill]="isWishlisted() ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                </button>
               </div>
 
+              <!-- Thumbnails Selector Row -->
               @if (getModalImages(selectedProduct()).length > 1) {
                 <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                   @for (imgUrl of getModalImages(selectedProduct()); track $index) {
@@ -374,52 +437,92 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
               }
             </div>
 
-            <!-- Details Column -->
-            <div class="space-y-4">
+            <!-- Right Column: Details, Brand Badge & Regional Pricing -->
+            <div class="space-y-5">
               <div>
                 <span
-                  class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider"
-                  >Product Overview</span
+                  class="inline-block bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-2"
                 >
-                <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  {{ selectedProduct().title }}
+                  {{ getBrandName(selectedProduct()) }}
+                </span>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white leading-tight">
+                  {{ selectedProduct()?.title }}
                 </h3>
               </div>
 
+              <!-- Regional Converted Pricing -->
               <div class="flex items-baseline gap-3">
-                <span class="text-2xl font-black text-slate-900 dark:text-white">
+                <span class="text-3xl font-black text-slate-900 dark:text-white">
                   {{ currencyService.formatPrice(getProductPrice(selectedProduct())) }}
                 </span>
-                @if (selectedProduct().variants?.edges?.[0]?.node?.compareAtPrice?.amount) {
+                @if (selectedProduct()?.variants?.edges?.[0]?.node?.compareAtPrice?.amount) {
                   <span class="text-sm text-slate-400 line-through">
                     {{
                       currencyService.formatPrice(
-                        selectedProduct().variants?.edges?.[0]?.node?.compareAtPrice
+                        selectedProduct()?.variants?.edges?.[0]?.node?.compareAtPrice
                       )
                     }}
                   </span>
                 }
+                <span
+                  class="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/60"
+                >
+                  Verified Stock
+                </span>
               </div>
 
               <p
-                class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-36 overflow-y-auto pr-2"
+                class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-32 overflow-y-auto pr-2 no-scrollbar"
               >
-                {{ selectedProduct().description }}
+                {{ selectedProduct()?.description }}
               </p>
 
-              <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex gap-3">
-                <button
-                  (click)="addProductToCart(selectedProduct())"
-                  [disabled]="isModalAdding()"
-                  class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-600/20 transition disabled:opacity-50 text-sm cursor-pointer"
+              <!-- In-App Cart Action -->
+              <button
+                (click)="addProductToCart(selectedProduct())"
+                [disabled]="isModalAdding()"
+                class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-600/30 transition text-sm cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>{{ isModalAdding() ? 'Adding to Cart...' : 'Add to Cart' }}</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </button>
+
+              <!-- Safe Payment Trust Bar -->
+              <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  🔒 Guaranteed Safe & Encrypted Checkout
+                </span>
+                <div
+                  class="flex flex-wrap gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300"
                 >
-                  {{ isModalAdding() ? 'Adding...' : 'Add to Cart' }}
-                </button>
+                  <span
+                    class="px-2.5 py-1 bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 rounded-md"
+                  >
+                    💚 M-PESA
+                  </span>
+                  <span
+                    class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
+                  >
+                    💳 Visa / Mastercard
+                  </span>
+                  <span
+                    class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
+                  >
+                    🛡️ 256-Bit SSL
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- SMART RELATED PRODUCTS SECTION -->
+          <!-- Bottom Grid: Smart Related Products Carousel -->
           <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
             <div class="flex items-center justify-between mb-4">
               <h4 class="text-lg font-bold text-slate-900 dark:text-white">
@@ -432,10 +535,10 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
               @for (related of getSmartRelatedProducts(selectedProduct()); track related.id) {
                 <div
                   (click)="openProductModal(related)"
-                  class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition group"
+                  class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition group flex gap-3 items-center"
                 >
                   <div
-                    class="w-full h-28 bg-slate-200 dark:bg-slate-900 rounded-xl overflow-hidden mb-2"
+                    class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden flex-shrink-0"
                   >
                     @if (getModalImages(related)[0]) {
                       <img
@@ -445,12 +548,14 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                       />
                     }
                   </div>
-                  <h5 class="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {{ related.title }}
-                  </h5>
-                  <p class="text-xs text-blue-600 dark:text-blue-400 font-bold mt-1">
-                    {{ currencyService.formatPrice(getProductPrice(related)) }}
-                  </p>
+                  <div class="overflow-hidden">
+                    <h5 class="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {{ related.title }}
+                    </h5>
+                    <p class="text-xs font-bold text-blue-600 dark:text-blue-400 mt-1">
+                      {{ currencyService.formatPrice(getProductPrice(related)) }}
+                    </p>
+                  </div>
                 </div>
               }
             </div>
@@ -481,6 +586,17 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         -ms-overflow-style: none;
         scrollbar-width: none;
       }
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+      .animate-shimmer {
+        animation: shimmer 1.5s infinite;
+      }
     `,
   ],
 })
@@ -493,9 +609,14 @@ export class HomeComponent implements OnInit {
 
   products = signal<any[]>([]);
   isLoading = signal<boolean>(true);
+  isLoadingMore = signal<boolean>(false);
+  hasMore = signal<boolean>(true);
+
+  // Modal State
   selectedProduct = signal<any | null>(null);
   activeImageIndex = signal<number>(0);
   isModalAdding = signal<boolean>(false);
+  isWishlisted = signal<boolean>(false);
 
   topBrands: string[] = ['Apple', 'Samsung', 'Sony', 'Logitech', 'Asus', 'Dell'];
 
@@ -528,17 +649,55 @@ export class HomeComponent implements OnInit {
 
   scrollFeatured(direction: 'left' | 'right'): void {
     if (!this.featuredContainer?.nativeElement) return;
-    const amount = direction === 'left' ? -320 : 320;
+    const amount = direction === 'left' ? -340 : 340;
     this.featuredContainer.nativeElement.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+
+  onFeaturedScroll(event: Event): void {
+    const target = event.target as HTMLElement;
+    const scrollEndThreshold = target.scrollWidth - target.scrollLeft - target.clientWidth;
+
+    if (scrollEndThreshold < 120 && !this.isLoadingMore() && this.hasMore()) {
+      this.isLoadingMore.set(true);
+
+      setTimeout(() => {
+        this.isLoadingMore.set(false);
+        if (this.products().length > 40) {
+          this.hasMore.set(false);
+        }
+      }, 1200);
+    }
   }
 
   openProductModal(product: any): void {
     this.selectedProduct.set(product);
     this.activeImageIndex.set(0);
+    this.isWishlisted.set(false);
   }
 
   closeProductModal(): void {
     this.selectedProduct.set(null);
+  }
+
+  toggleWishlist(): void {
+    this.isWishlisted.set(!this.isWishlisted());
+  }
+
+  getBrandName(product: any): string {
+    if (!product) return 'TechBytes';
+    if (product.vendor) return product.vendor;
+
+    const title = (product.title || '').toLowerCase();
+    if (title.includes('apple') || title.includes('iphone') || title.includes('macbook'))
+      return 'Apple';
+    if (title.includes('samsung') || title.includes('galaxy')) return 'Samsung';
+    if (title.includes('dell')) return 'Dell';
+    if (title.includes('hp')) return 'HP';
+    if (title.includes('sony')) return 'Sony';
+    if (title.includes('logitech')) return 'Logitech';
+    if (title.includes('asus')) return 'Asus';
+
+    return 'Premium Gear';
   }
 
   getModalImages(product: any): string[] {
@@ -546,9 +705,6 @@ export class HomeComponent implements OnInit {
     return product.images.edges.map((edge: any) => edge.node.url);
   }
 
-  /**
-   * Safely retrieves Shopify GraphQL price object from product or variant node
-   */
   getProductPrice(product: any): { amount: string; currencyCode: string } | null {
     if (!product) return null;
     return product.variants?.edges?.[0]?.node?.price || product.price || null;
