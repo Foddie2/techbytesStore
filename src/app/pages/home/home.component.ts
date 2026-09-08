@@ -6,6 +6,12 @@ import { CurrencyService } from '../../core/services/currency';
 import { HeroComponent } from '../../shared/components/hero/hero.component';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 
+export interface BrandLogo {
+  name: string;
+  viewBox: string;
+  path: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -72,13 +78,13 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         }
 
         @if (!isLoading() && products().length > 0) {
-          <!-- Relative Row Flanked by Side Navigation Arrows -->
-          <div class="relative group">
+          <!-- Relative Row Flanked by Side Navigation Arrows (Named Group to Prevent Child Hover Collisions) -->
+          <div class="relative group/row">
             <!-- Left Flanking Arrow -->
             <button
               (click)="scrollFeatured('left')"
               aria-label="Scroll Left"
-              class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95"
+              class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover/row:opacity-100 active:scale-95"
             >
               ←
             </button>
@@ -98,23 +104,28 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                 </div>
               }
 
-              <!-- Infinite Loading Shimmer Skeleton Cards -->
+              <!-- Infinite Loading Shimmer Skeleton Cards (Flush Top Image / Padded Body) -->
               @if (isLoadingMore()) {
                 @for (shimmer of [1, 2]; track shimmer) {
                   <div
-                    class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-4 animate-pulse"
+                    class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between animate-pulse"
                   >
-                    <div
-                      class="w-full h-48 bg-slate-200 dark:bg-slate-700/60 rounded-xl relative overflow-hidden"
-                    >
+                    <div>
                       <div
-                        class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 dark:via-slate-600/20 to-transparent animate-shimmer"
-                      ></div>
+                        class="w-full h-48 bg-slate-200 dark:bg-slate-700/60 relative overflow-hidden"
+                      >
+                        <div
+                          class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 dark:via-slate-600/20 to-transparent animate-shimmer"
+                        ></div>
+                      </div>
+                      <div class="p-4 space-y-2">
+                        <div class="h-4 bg-slate-200 dark:bg-slate-700/60 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-200 dark:bg-slate-700/60 rounded w-1/2"></div>
+                      </div>
                     </div>
-                    <div class="h-4 bg-slate-200 dark:bg-slate-700/60 rounded w-3/4"></div>
-                    <div class="h-3 bg-slate-200 dark:bg-slate-700/60 rounded w-1/2"></div>
+
                     <div
-                      class="pt-4 border-t border-slate-100 dark:border-slate-700/60 flex justify-between items-center"
+                      class="p-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex justify-between items-center"
                     >
                       <div class="h-6 bg-slate-200 dark:bg-slate-700/60 rounded w-20"></div>
                       <div class="h-8 bg-slate-200 dark:bg-slate-700/60 rounded w-24"></div>
@@ -128,7 +139,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             <button
               (click)="scrollFeatured('right')"
               aria-label="Scroll Right"
-              class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95"
+              class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover/row:opacity-100 active:scale-95"
             >
               →
             </button>
@@ -139,103 +150,171 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       <!-- Top Selling Items Showcase -->
       <section class="max-w-7xl mx-auto px-4">
         <div
-          class="bg-linear-to-br from-slate-900 via-slate-900 to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-800 text-white shadow-2xl"
+          class="bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-xl dark:shadow-2xl transition-colors duration-300"
         >
           <div
             class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4"
           >
             <div>
               <span
-                class="inline-block bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-2"
+                class="inline-block bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-2"
               >
                 🔥 High Demand
               </span>
-              <h2 class="text-2xl sm:text-3xl font-black text-white">Top Selling Items</h2>
-              <p class="text-slate-400 text-sm mt-1">
+              <h2 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                Top Selling Items
+              </h2>
+              <p class="text-slate-600 dark:text-slate-400 text-sm mt-1">
                 Most ordered hardware & gear based on customer re-order volume.
               </p>
             </div>
             <a
               href="#featured-products"
-              class="text-xs font-bold text-blue-400 hover:text-blue-300 underline"
+              class="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors"
             >
               View Full Collection →
             </a>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            @for (product of topSellingProducts(); track product.id; let i = $index) {
-              <div
-                (click)="openProductModal(product)"
-                class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-500/60 hover:shadow-xl transition-all duration-300 cursor-pointer group"
-              >
-                <div>
-                  <!-- Badge & Image Container -->
-                  <div class="relative w-full h-48 bg-slate-900 rounded-xl overflow-hidden mb-4">
-                    <span
-                      class="absolute top-2 left-2 z-10 bg-amber-500 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow"
-                    >
-                      #{{ i + 1 }} Bestseller
-                    </span>
-                    @if (getModalImages(product)[0]) {
-                      <img
-                        [src]="getModalImages(product)[0]"
-                        [alt]="product.title"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    }
-                  </div>
+          <!-- Top Selling Row Flanked by Side Navigation Arrows -->
+          <div class="relative group/row">
+            <!-- Left Flanking Arrow -->
+            <button
+              (click)="scrollTopSelling('left')"
+              aria-label="Scroll Left"
+              class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover/row:opacity-100 active:scale-95"
+            >
+              ←
+            </button>
 
-                  <h3
-                    class="font-bold text-white text-base truncate group-hover:text-blue-400 transition-colors"
-                  >
-                    {{ product.title }}
-                  </h3>
-                  <p class="text-slate-400 text-xs line-clamp-2 mt-1">
-                    {{ product.description }}
-                  </p>
-                </div>
-
+            <!-- Horizontal Scroll Container -->
+            <div
+              #topSellingContainer
+              class="flex gap-6 overflow-x-auto scroll-smooth pb-4 px-1 no-scrollbar snap-x snap-mandatory"
+            >
+              @for (product of topSellingProducts(); track product.id; let i = $index) {
                 <div
-                  class="pt-4 border-t border-slate-700/60 flex items-center justify-between mt-4"
+                  (click)="openProductModal(product)"
+                  class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-amber-500/60 dark:hover:border-amber-500/60 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group/card"
                 >
                   <div>
-                    <span class="text-xs text-slate-400 block">Price</span>
-                    <span class="text-lg font-black text-white">
-                      {{ currencyService.formatPrice(getProductPrice(product)) }}
-                    </span>
+                    <!-- Flush Product Image Container -->
+                    <div
+                      class="relative w-full h-48 bg-slate-100 dark:bg-slate-900 overflow-hidden"
+                    >
+                      <span
+                        class="absolute top-2 left-2 z-10 bg-amber-500 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm"
+                      >
+                        #{{ i + 1 }} Bestseller
+                      </span>
+                      @if (getModalImages(product)[0]) {
+                        <img
+                          [src]="getModalImages(product)[0]"
+                          [alt]="product.title"
+                          class="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
+                        />
+                      }
+                    </div>
+
+                    <!-- Padded Content Body -->
+                    <div class="p-4 space-y-1">
+                      <h3
+                        class="font-bold text-slate-900 dark:text-white text-base truncate group-hover/card:text-blue-600 dark:group-hover/card:text-blue-400 transition-colors"
+                      >
+                        {{ product.title }}
+                      </h3>
+                      <p
+                        class="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 leading-relaxed"
+                      >
+                        {{ product.description }}
+                      </p>
+                    </div>
                   </div>
-                  <button
-                    (click)="$event.stopPropagation(); addProductToCart(product)"
-                    class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md cursor-pointer"
+
+                  <!-- Padded Footer -->
+                  <div
+                    class="p-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between mt-2"
                   >
-                    Quick Add
-                  </button>
+                    <div>
+                      <span class="text-xs text-slate-500 dark:text-slate-400 block">Price</span>
+                      <span class="text-lg font-black text-slate-900 dark:text-white">
+                        {{ currencyService.formatPrice(getProductPrice(product)) }}
+                      </span>
+                    </div>
+                    <button
+                      (click)="$event.stopPropagation(); addProductToCart(product)"
+                      class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md cursor-pointer"
+                    >
+                      Quick Add
+                    </button>
+                  </div>
                 </div>
-              </div>
-            }
+              }
+            </div>
+
+            <!-- Right Flanking Arrow -->
+            <button
+              (click)="scrollTopSelling('right')"
+              aria-label="Scroll Right"
+              class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-white flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover/row:opacity-100 active:scale-95"
+            >
+              →
+            </button>
           </div>
         </div>
       </section>
 
-      <!-- Top Brands Section -->
-      <section class="max-w-7xl mx-auto px-4">
-        <div class="bg-slate-900 rounded-3xl p-8 border border-slate-800">
-          <p class="text-center text-xs font-bold text-blue-400 uppercase tracking-widest mb-6">
+      <!-- Top Brands Section (Fixed Standalone SVG Logos) -->
+      <!-- Top Brands Section (Infinite Marquee Scroll) -->
+      <section class="max-w-7xl mx-auto px-4 py-6">
+        <div
+          class="border-y border-slate-200/80 dark:border-slate-800/80 py-8 px-4 transition-colors duration-300"
+        >
+          <p
+            class="text-center text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-8"
+          >
             Trusted Hardware Partners & Brands
           </p>
-          <div
-            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 items-center text-center opacity-70"
-          >
-            @for (brand of topBrands; track brand) {
-              <div
-                class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 hover:opacity-100 hover:border-blue-500 transition cursor-default"
-              >
-                <span class="font-extrabold text-slate-200 text-sm tracking-wider uppercase">{{
-                  brand
-                }}</span>
-              </div>
-            }
+
+          <!-- Infinite Scroll Wrapper -->
+          <div class="relative w-full overflow-hidden group">
+            <div
+              class="flex items-center gap-12 sm:gap-16 animate-marquee whitespace-nowrap hover:[animation-play-state:paused]"
+            >
+              <!-- First Set -->
+              @for (brand of brandLogos; track brand.name + '-set1') {
+                <div
+                  class="flex items-center justify-center h-12 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:scale-110 transition-all duration-300 cursor-pointer flex-shrink-0"
+                  [title]="brand.name"
+                >
+                  <svg
+                    class="w-28 h-7 fill-current transition-colors duration-300"
+                    [attr.viewBox]="brand.viewBox"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path [attr.d]="brand.path" />
+                  </svg>
+                </div>
+              }
+
+              <!-- Duplicate Set for Seamless Loop -->
+              @for (brand of brandLogos; track brand.name + '-set2') {
+                <div
+                  class="flex items-center justify-center h-12 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:scale-110 transition-all duration-300 cursor-pointer flex-shrink-0"
+                  [title]="brand.name"
+                >
+                  <svg
+                    class="w-28 h-7 fill-current transition-colors duration-300"
+                    [attr.viewBox]="brand.viewBox"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path [attr.d]="brand.path" />
+                  </svg>
+                </div>
+              }
+            </div>
           </div>
         </div>
       </section>
@@ -597,6 +676,21 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       .animate-shimmer {
         animation: shimmer 1.5s infinite;
       }
+
+      @keyframes marquee {
+        0% {
+          transform: translateX(0%);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      .animate-marquee {
+        display: flex;
+        width: max-content;
+        animation: marquee 25s linear infinite;
+      }
     `,
   ],
 })
@@ -606,6 +700,7 @@ export class HomeComponent implements OnInit {
   public currencyService = inject(CurrencyService);
 
   @ViewChild('featuredContainer') featuredContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('topSellingContainer') topSellingContainer!: ElementRef<HTMLDivElement>;
 
   products = signal<any[]>([]);
   isLoading = signal<boolean>(true);
@@ -618,7 +713,39 @@ export class HomeComponent implements OnInit {
   isModalAdding = signal<boolean>(false);
   isWishlisted = signal<boolean>(false);
 
-  topBrands: string[] = ['Apple', 'Samsung', 'Sony', 'Logitech', 'Asus', 'Dell'];
+  // Top Selling Products Brand Logos Showcase
+  public brandLogos: BrandLogo[] = [
+    {
+      name: 'Apple',
+      viewBox: '0 0 170 170',
+      path: 'M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-5.01.12-9.87-1.93-14.58-6.14-3.24-2.88-7.14-7.59-11.72-14.13-7.53-10.74-13.32-22.75-17.37-36.03-4.05-13.28-6.08-25.75-6.08-37.4 0-14.88 3.5-27.17 10.51-36.88 7.01-9.71 15.82-14.67 26.43-14.89 4.7-.11 9.87 1.15 15.5 3.79 5.63 2.64 9.61 3.96 11.95 3.96 2.12 0 6.28-1.38 12.48-4.14 6.2-2.76 11.64-3.96 16.32-3.6 11.62.67 20.89 4.9 27.81 12.7-10.23 6.24-15.23 15.01-15 26.32.23 8.79 3.86 16.14 10.89 22.06 7.03 5.92 15.19 9.17 24.47 9.75-2.3 6.89-5.35 13.91-9.17 21.06zm-27.81-105.9c0 6.69-2.42 13.08-7.26 18.17-4.84 5.09-10.81 8.01-17.91 8.76-.12-.81-.18-1.62-.18-2.43 0-6.69 2.51-13.19 7.53-18.5 5.02-5.31 11.08-8.29 18.18-8.94.12.92.18 1.83.18 2.74z',
+    },
+    {
+      name: 'Samsung',
+      viewBox: '0 0 512 120',
+      path: 'M62.6 70.8c0 9.8 11 14.5 28.5 17.5 26 4.5 50.1 10.6 50.1 33.1 0 25.8-23 38.6-62.1 38.6-35.6 0-61.1-13-61.1-36.1h32.6c0 10.3 11 15 28.5 15 17.5 0 28.5-4.5 28.5-15 0-9.8-11-13.5-28.5-16.5-26-4.5-50.1-10.6-50.1-33.1 0-25.8 23-37.6 60.1-37.6 34.6 0 58.1 11.5 58.1 34.1H114c0-8.8-9.5-13.5-25.5-13.5-16 0-25.9 4.2-25.9 13.5zm102.5-32.6h33.6l38.1 120h-32.6l-6.5-22h-32.1l-6.5 22h-32.1l38.1-120zm14 77h21l-10.5-37.1-10.5 37.1zm118.9-77h36.1l23.5 73.1 23.5-73.1h36.1v120h-30.1V82.8L370.6 158h-23l-16.5-75.2v75.2h-30.1v-120zm152.1 40c0-9.8-11-14.5-28.5-17.5-26-4.5-50.1-10.6-50.1-33.1 0-25.8 23-38.6 62.1-38.6 35.6 0 61.1 13 61.1 36.1h-32.6c0-10.3-11-15-28.5-15-17.5 0-28.5 4.5-28.5 15 0 9.8 11 13.5 28.5 16.5 26 4.5 50.1 10.6 50.1 33.1 0 25.8-23 37.6-60.1 37.6-34.6 0-58.1-11.5-58.1-34.1h32.6c0 8.8 9.5 13.5 25.5 13.5 16 0 25.9-4.2 25.9-13.5z',
+    },
+    {
+      name: 'Sony',
+      viewBox: '0 0 500 100',
+      path: 'M102.7 20c-28.3 0-48.4 12.8-48.4 30 0 29.5 59.8 21.6 59.8 38.6 0 6.6-8.7 11.4-23.7 11.4-21.7 0-38.2-10-38.2-22H15c0 30.5 33.8 42 75.2 42 32.5 0 61-12.8 61-33.5 0-31.5-60.2-21-60.2-38.6 0-6.1 8.2-10 19.8-10 18 0 32.1 7 32.1 18.2h36.7C179.6 28 145.8 20 102.7 20zm134.4 0c-45.2 0-71.2 22.8-71.2 50s26 50 71.2 50 71.2-22.8 71.2-50-26-50-71.2-50zm0 76.5c-20.2 0-32-12-32-26.5s11.8-26.5 32-26.5 32 12 32 26.5-11.8 26.5-32 26.5zm115.5-76.5v60L310 20h-35v100h35V60l42.6 60h35V20h-35zm121.2 0l-28.5 45.2L416.8 20h-40l48.5 70.8V120h36.8V90.8l48.5-70.8h-40.8z',
+    },
+    {
+      name: 'Logitech',
+      viewBox: '0 0 300 120',
+      path: 'M48.2 21.5c-26.6 0-48.2 21.6-48.2 48.2s21.6 48.2 48.2 48.2 48.2-21.6 48.2-48.2S74.8 21.5 48.2 21.5zm0 65.5c-9.5 0-17.3-7.7-17.3-17.3s7.7-17.3 17.3-17.3 17.3 7.7 17.3 17.3-7.8 17.3-17.3 17.3zm78.2-65.5v96.4h28.5V21.5h-28.5zm62.4 28.5c-19.8 0-35.8 16-35.8 35.8s16 35.8 35.8 35.8 35.8-16 35.8-35.8-16-35.8-35.8-35.8zm0 48.7c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9 12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9zm81.4-48.7v12.3h22.6v21.5h-22.6v23.2c0 5.4 3.9 8.2 9.5 8.2h13.1v21.5h-18c-18.7 0-27.5-9.3-27.5-27.2V21.5h22.9z',
+    },
+    {
+      name: 'Asus',
+      viewBox: '0 0 500 100',
+      path: 'M110.2 20L40.8 100h38.2l12.8-18.2h56.8l12.8 18.2h38.2L128.8 20h-18.6zm8.8 22.8l18.8 26.8H92.6l18.8-26.8zM242.2 20c-35.5 0-59.8 13.8-59.8 32.5 0 31.8 68.2 22.8 68.2 38.5 0 6.8-9.8 11.2-24.8 11.2-22.8 0-41.2-10.2-41.2-22.5h-36.8c0 31.5 35.8 40.2 78 40.2 38.2 0 63.8-13.8 63.8-33.8 0-32.8-68.2-22.8-68.2-38.5 0-6.2 9.2-10.2 22.8-10.2 20.8 0 35.8 8.2 35.8 19.2h36.8C316.8 28.2 284.2 20 242.2 20zm128 0c-35.5 0-59.8 13.8-59.8 32.5 0 31.8 68.2 22.8 68.2 38.5 0 6.8-9.8 11.2-24.8 11.2-22.8 0-41.2-10.2-41.2-22.5h-36.8c0 31.5 35.8 40.2 78 40.2 38.2 0 63.8-13.8 63.8-33.8 0-32.8-68.2-22.8-68.2-38.5 0-6.2 9.2-10.2 22.8-10.2 20.8 0 35.8 8.2 35.8 19.2h36.8C444.8 28.2 412.2 20 370.2 20z',
+    },
+    {
+      name: 'Dell',
+      viewBox: '0 0 100 100',
+      path: 'M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 92C26.8 92 8 73.2 8 50S26.8 8 50 8s42 18.8 42 42-18.8 42-42 42zm-28-58v32h14c8.8 0 15-5.2 15-16s-6.2-16-15-16H22zm10 24v-16h4c4.4 0 7 2.2 7 8s-2.6 8-7 8h-4zm24-24l-8 32h8l1.8-7.2h8.4l1.8 7.2h8l-8-32h-12zm3.8 17.8l2.2-8.8 2.2 8.8h-4.4zm16.2-17.8v32h18v-8h-10v-24h-8zm16 0v32h18v-8h-10v-24h-8z',
+    },
+  ];
 
   topSellingProducts = computed(() => {
     return this.products().slice(0, 4);
@@ -651,6 +778,12 @@ export class HomeComponent implements OnInit {
     if (!this.featuredContainer?.nativeElement) return;
     const amount = direction === 'left' ? -340 : 340;
     this.featuredContainer.nativeElement.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+
+  scrollTopSelling(direction: 'left' | 'right'): void {
+    if (!this.topSellingContainer?.nativeElement) return;
+    const amount = direction === 'left' ? -340 : 340;
+    this.topSellingContainer.nativeElement.scrollBy({ left: amount, behavior: 'smooth' });
   }
 
   onFeaturedScroll(event: Event): void {

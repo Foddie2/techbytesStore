@@ -66,13 +66,13 @@ interface HeroSlide {
           </div>
 
           <!-- Dynamic Headline Area -->
-          <div class="min-h-[140px] sm:min-h-[160px] flex items-center">
+          <div class="min-h-35 sm:min-h-160px flex items-center">
             <h1
               class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-tight transition-opacity duration-500"
             >
               {{ activeSlide().headline }}
               <span
-                class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
+                class="block text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
               >
                 {{ activeSlide().highlightText }}
               </span>
@@ -80,7 +80,7 @@ interface HeroSlide {
           </div>
 
           <!-- Dynamic Description Area -->
-          <div class="min-h-[72px] sm:min-h-[64px] flex items-center">
+          <div class="min-h-72px sm:min-h-16 flex items-center">
             <p
               class="text-slate-600 dark:text-slate-300 text-md sm:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0 transition-opacity duration-500"
             >
@@ -152,18 +152,19 @@ interface HeroSlide {
             <!-- Glow Outline -->
             <div
               aria-hidden="true"
-              class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
+              class="absolute -inset-1 bg-linear-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
             ></div>
 
             <!-- Synchronized Product Card -->
+
             <div
-              class="relative bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-6 shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-200"
+              class="relative bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-200 overflow-hidden"
             >
               @if (activeSlide().product) {
-                <div class="space-y-4">
-                  <!-- Product Image Container -->
+                <div>
+                  <!-- Product Image Container (Full Width / Flush Top) -->
                   <div
-                    class="relative h-64 w-full bg-slate-100 dark:bg-slate-950 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-800 transition-colors duration-200"
+                    class="relative h-64 w-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden"
                   >
                     @if (getSlideImageUrl(activeSlide().product)) {
                       <img
@@ -179,53 +180,56 @@ interface HeroSlide {
                     }
 
                     <span
-                      class="absolute top-3 right-3 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow"
+                      class="absolute top-3 right-3 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow z-10"
                     >
                       Top Pick #{{ currentIndex() + 1 }}
                     </span>
                   </div>
 
-                  <!-- Product Info -->
-                  <div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
-                      {{ activeSlide().product?.title }}
-                    </h3>
-                    <p
-                      class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed"
-                    >
-                      {{ activeSlide().product?.description }}
-                    </p>
-                  </div>
-
-                  <!-- Price & In-App Cart Action -->
-                  <div
-                    class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 transition-colors duration-200"
-                  >
+                  <!-- Card Body Content (Padded Section) -->
+                  <div class="p-6 space-y-4">
+                    <!-- Product Info -->
                     <div>
-                      <span class="text-xs text-slate-500 dark:text-slate-400 block"
-                        >Retail Price</span
+                      <h3 class="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
+                        {{ activeSlide().product?.title }}
+                      </h3>
+                      <p
+                        class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed"
                       >
-                      <span class="text-2xl font-black text-slate-900 dark:text-white">
-                        {{
-                          currencyService.formatPrice(
-                            activeSlide().product?.variants?.edges?.[0]?.node?.price
-                          )
-                        }}
-                      </span>
+                        {{ activeSlide().product?.description }}
+                      </p>
                     </div>
 
-                    <button
-                      (click)="addToCart(getVariantId(activeSlide().product))"
-                      [disabled]="isAdding()"
-                      class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
+                    <!-- Price & In-App Cart Action -->
+                    <div
+                      class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 transition-colors duration-200"
                     >
-                      {{ isAdding() ? 'Adding...' : 'Add to Cart' }}
-                    </button>
+                      <div>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 block"
+                          >Retail Price</span
+                        >
+                        <span class="text-2xl font-black text-slate-900 dark:text-white">
+                          {{
+                            currencyService.formatPrice(
+                              activeSlide().product?.variants?.edges?.[0]?.node?.price
+                            )
+                          }}
+                        </span>
+                      </div>
+
+                      <button
+                        (click)="addToCart(getVariantId(activeSlide().product))"
+                        [disabled]="isAdding()"
+                        class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
+                      >
+                        {{ isAdding() ? 'Adding...' : 'Add to Cart' }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               } @else {
                 <!-- Skeleton Loader -->
-                <div class="space-y-4 animate-pulse py-4">
+                <div class="space-y-4 animate-pulse p-6">
                   <div class="h-60 bg-slate-200 dark:bg-slate-700/50 rounded-xl w-full"></div>
                   <div class="h-4 bg-slate-200 dark:bg-slate-700/50 rounded w-3/4"></div>
                   <div class="h-3 bg-slate-200 dark:bg-slate-700/50 rounded w-1/2"></div>
@@ -257,7 +261,7 @@ export class HeroComponent implements OnInit, OnDestroy {
       headline: 'Practical Tools Designed to Make Daily Tasks',
       highlightText: 'Easier, Faster & Better.',
       description:
-        'Eliminate daily friction with intelligent gadgets, automated home gear, and practical productivity devices engineered for seamless convenience.',
+        ' Discover a curated selection of electronics and accessories that enhance your home, office, and lifestyle with efficiency and style.',
     },
     {
       tagline: 'Premium Performance • Zero Hassle',

@@ -68,7 +68,7 @@ interface BrandCollection {
               <div class="flex gap-6 overflow-hidden">
                 @for (j of [1, 2, 3, 4]; track j) {
                   <div
-                    class="w-72 sm:w-80 h-96 bg-slate-200 dark:bg-slate-800/80 rounded-2xl flex-shrink-0"
+                    class="w-72 sm:w-80 h-96 bg-slate-200 dark:bg-slate-800/80 rounded-2xl shrink-0"
                   ></div>
                 }
               </div>
@@ -114,7 +114,7 @@ interface BrandCollection {
                   class="flex gap-6 overflow-x-auto scroll-smooth pb-4 px-1 no-scrollbar snap-x snap-mandatory"
                 >
                   @for (product of collection.products; track product.id) {
-                    <div class="w-72 sm:w-80 flex-shrink-0 snap-start">
+                    <div class="w-72 sm:w-80 shrink-0 snap-start">
                       <app-product-card
                         [product]="product"
                         (selectProduct)="openProductModal($event)"
@@ -126,7 +126,7 @@ interface BrandCollection {
                   @if (collection.isLoadingMore) {
                     @for (shimmer of [1, 2]; track shimmer) {
                       <div
-                        class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-4 animate-pulse"
+                        class="w-72 sm:w-80 shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-4 animate-pulse"
                       >
                         <div
                           class="w-full h-48 bg-slate-200 dark:bg-slate-700/60 rounded-xl relative overflow-hidden"
@@ -252,7 +252,7 @@ interface BrandCollection {
                     <button
                       (click)="activeImageIndex.set($index)"
                       [class.ring-2]="activeImageIndex() === $index"
-                      class="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex-shrink-0 cursor-pointer ring-blue-600 transition"
+                      class="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 shrink-0 cursor-pointer ring-blue-600 transition"
                     >
                       <img
                         [src]="imgUrl"
@@ -354,7 +354,7 @@ interface BrandCollection {
                   class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition group flex gap-3 items-center"
                 >
                   <div
-                    class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden flex-shrink-0"
+                    class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shrink-0"
                   >
                     @if (getModalImages(related)[0]) {
                       <img
