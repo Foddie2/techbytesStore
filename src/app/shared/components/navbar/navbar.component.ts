@@ -216,24 +216,25 @@ import { CurrencyService } from '../../../core/services/currency';
                 (mouseleave)="isAccountOpen.set(false)"
                 class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn"
               >
-                <!-- Customer Greeting -->
+                <!-- Greeting Header -->
                 <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
                   <p
-                    class="text-xs font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider"
+                    class="text-[13px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider"
                   >
                     Account Central
                   </p>
-                  <p class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  <p class="text-[15px] font-bold text-slate-900 dark:text-white truncate">
                     My Customer Dashboard
                   </p>
                 </div>
 
-                <!-- Action Options -->
+                <!-- Action Options with Tab Query Parameters -->
                 <div class="py-1">
                   <a
                     routerLink="/account"
+                    [queryParams]="{ tab: 'overview' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
                     <svg
                       class="w-4 h-4 text-slate-400"
@@ -248,13 +249,14 @@ import { CurrencyService } from '../../../core/services/currency';
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                       />
                     </svg>
-                    <span>My Account</span>
+                    <span>My Account Overview</span>
                   </a>
 
                   <a
-                    routerLink="/track-order"
+                    routerLink="/account"
+                    [queryParams]="{ tab: 'orders' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
                     <svg
                       class="w-4 h-4 text-slate-400"
@@ -269,13 +271,14 @@ import { CurrencyService } from '../../../core/services/currency';
                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                       />
                     </svg>
-                    <span>Orders</span>
+                    <span>Orders Ever Placed</span>
                   </a>
 
                   <a
-                    routerLink="/wishlist"
+                    routerLink="/account"
+                    [queryParams]="{ tab: 'wishlist' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
                     <svg
                       class="w-4 h-4 text-slate-400"
@@ -290,16 +293,17 @@ import { CurrencyService } from '../../../core/services/currency';
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       />
                     </svg>
-                    <span>Wishlist</span>
+                    <span>Saved Wishlist</span>
                   </a>
                 </div>
 
-                <!-- Authentication / Quick Links -->
+                <!-- Authentication CTA -->
                 <div class="py-1.5 px-4 bg-slate-50/30 dark:bg-slate-800/30 rounded-b-2xl">
                   <a
                     routerLink="/account"
+                    [queryParams]="{ tab: 'overview' }"
                     (click)="isAccountOpen.set(false)"
-                    class="text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                    class="text-[13px] font-extrabold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
                   >
                     Sign In or Register →
                   </a>
@@ -641,20 +645,23 @@ import { CurrencyService } from '../../../core/services/currency';
             <div class="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
               <a
                 routerLink="/account"
+                [queryParams]="{ tab: 'overview' }"
                 (click)="isMobileOpen.set(false)"
                 class="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-2xs text-slate-700 dark:text-slate-200 active:bg-blue-50 transition"
               >
                 Profile
               </a>
               <a
-                routerLink="/track-order"
+                routerLink="/account"
+                [queryParams]="{ tab: 'orders' }"
                 (click)="isMobileOpen.set(false)"
                 class="p-2.5 bg-white dark:bg-slate-800 rounded-lg shadow-2xs text-slate-700 dark:text-slate-200 active:bg-blue-50 transition"
               >
                 Orders
               </a>
               <a
-                routerLink="/wishlist"
+                routerLink="/account"
+                [queryParams]="{ tab: 'wishlist' }"
                 (click)="isMobileOpen.set(false)"
                 class="p-2.5 bg-white dark:bg-slate-800 rounded-lg shadow-2xs text-slate-700 dark:text-slate-200 active:bg-blue-50 transition"
               >

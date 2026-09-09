@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Shopify } from './shopify';
+import { ShopifyService } from './shopify';
 
 describe('Shopify', () => {
-  let service: Shopify;
+  let service: ShopifyService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Shopify);
+    service = TestBed.inject(ShopifyService);
   });
 
   it('should be created', () => {

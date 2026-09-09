@@ -96,7 +96,7 @@ export interface BrandLogo {
               class="flex gap-6 overflow-x-auto scroll-smooth pb-4 px-1 no-scrollbar snap-x snap-mandatory"
             >
               @for (product of products(); track product.id) {
-                <div class="w-72 sm:w-80 flex-shrink-0 snap-start">
+                <div class="w-72 sm:w-80 shrink-0 snap-start">
                   <app-product-card
                     [product]="product"
                     (selectProduct)="openProductModal($event)"
@@ -108,7 +108,7 @@ export interface BrandLogo {
               @if (isLoadingMore()) {
                 @for (shimmer of [1, 2]; track shimmer) {
                   <div
-                    class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between animate-pulse"
+                    class="w-72 sm:w-80 shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between animate-pulse"
                   >
                     <div>
                       <div
@@ -150,7 +150,7 @@ export interface BrandLogo {
       <!-- Top Selling Items Showcase -->
       <section class="max-w-7xl mx-auto px-4">
         <div
-          class="bg-gradient-to-br from-slate-50 via-slate-100/70 to-blue-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-xl dark:shadow-2xl transition-colors duration-300"
+          class="bg-linear-to-br from-slate-50 via-slate-100/70 to-blue-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950 rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white shadow-xl dark:shadow-2xl transition-colors duration-300"
         >
           <div
             class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4"
@@ -195,7 +195,7 @@ export interface BrandLogo {
               @for (product of topSellingProducts(); track product.id; let i = $index) {
                 <div
                   (click)="openProductModal(product)"
-                  class="w-72 sm:w-80 flex-shrink-0 snap-start bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-amber-500/60 dark:hover:border-amber-500/60 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group/card"
+                  class="w-72 sm:w-80 shrink-0 snap-start bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-amber-500/60 dark:hover:border-amber-500/60 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group/card"
                 >
                   <div>
                     <!-- Flush Product Image Container -->
@@ -284,7 +284,7 @@ export interface BrandLogo {
               <!-- First Set -->
               @for (brand of brandLogos; track brand.name + '-set1') {
                 <div
-                  class="flex items-center justify-center h-12 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:scale-110 transition-all duration-300 cursor-pointer flex-shrink-0"
+                  class="flex items-center justify-center h-12 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:scale-110 transition-all duration-300 cursor-pointer shrink-0"
                   [title]="brand.name"
                 >
                   <svg
@@ -301,7 +301,7 @@ export interface BrandLogo {
               <!-- Duplicate Set for Seamless Loop -->
               @for (brand of brandLogos; track brand.name + '-set2') {
                 <div
-                  class="flex items-center justify-center h-12 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:scale-110 transition-all duration-300 cursor-pointer flex-shrink-0"
+                  class="flex items-center justify-center h-12 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:scale-110 transition-all duration-300 cursor-pointer shrink-0"
                   [title]="brand.name"
                 >
                   <svg
@@ -364,10 +364,10 @@ export interface BrandLogo {
             @for (product of marqueeProducts(); track $index) {
               <div
                 (click)="openProductModal(product)"
-                class="w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex gap-4 items-center flex-shrink-0 cursor-pointer hover:border-blue-500 transition-all shadow-xs"
+                class="w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex gap-4 items-center shrink-0 cursor-pointer hover:border-blue-500 transition-all shadow-xs"
               >
                 <div
-                  class="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden flex-shrink-0"
+                  class="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden shrink-0"
                 >
                   @if (getModalImages(product)[0]) {
                     <img
@@ -503,7 +503,7 @@ export interface BrandLogo {
                     <button
                       (click)="activeImageIndex.set($index)"
                       [class.ring-2]="activeImageIndex() === $index"
-                      class="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex-shrink-0 cursor-pointer ring-blue-600 transition"
+                      class="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 shrink-0 cursor-pointer ring-blue-600 transition"
                     >
                       <img
                         [src]="imgUrl"
@@ -617,7 +617,7 @@ export interface BrandLogo {
                   class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition group flex gap-3 items-center"
                 >
                   <div
-                    class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden flex-shrink-0"
+                    class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shrink-0"
                   >
                     @if (getModalImages(related)[0]) {
                       <img
@@ -824,11 +824,11 @@ export class HomeComponent implements OnInit {
     if (title.includes('apple') || title.includes('iphone') || title.includes('macbook'))
       return 'Apple';
     if (title.includes('samsung') || title.includes('galaxy')) return 'Samsung';
-    if (title.includes('dell')) return 'Dell';
-    if (title.includes('hp')) return 'HP';
-    if (title.includes('sony')) return 'Sony';
-    if (title.includes('logitech')) return 'Logitech';
-    if (title.includes('asus')) return 'Asus';
+    if (title.includes('dell') || title.includes('inspiron') || title.includes('vostro')) return 'Dell';
+    if (title.includes('hp') || title.includes('pavilion') || title.includes('envy') || title.includes('omen') || title.includes('omnibook')) return 'HP';
+    if (title.includes('sony') || title.includes('playstation') || title.includes('ps5') || title.includes('ps4')) return 'Sony';
+    if (title.includes('logitech') || title.includes('gaming') || title.includes('gamer') || title.includes('gaming mouse')) return 'Logitech';
+    if (title.includes('asus') || title.includes('zenbook') || title.includes('vivoBook') || title.includes('rog')) return 'Asus';
 
     return 'Premium Gear';
   }

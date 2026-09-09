@@ -265,7 +265,7 @@ export class HeroComponent implements OnInit, OnDestroy {
     },
     {
       tagline: 'Premium Performance • Zero Hassle',
-      headline: 'Next-Gen Hardware Engineered For',
+      headline: 'Hardware Engineered For',
       highlightText: 'Uncompromised Efficiency.',
       description:
         'Upgrade your workspace with direct-sourced electronics and high-durability accessories built to perform under pressure.',
@@ -275,7 +275,7 @@ export class HeroComponent implements OnInit, OnDestroy {
       headline: 'Curated Electronics Sourced Directly For',
       highlightText: 'Modern Connected Homes.',
       description:
-        'Enjoy verified product accuracy, fast global fulfillment, and strict quality checks on every dispatch.',
+        'Explore our handpicked collection of smart home devices and accessories, designed to seamlessly integrate into your lifestyle and elevate your living space.',
     },
   ]);
 

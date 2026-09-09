@@ -2,11 +2,13 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { ProductsPageComponent } from './pages/products/products.component';
 import { TrackOrderComponent } from './pages/track-order/track-order.component';
+import { AccountComponent } from './pages/account/account.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'products', component: ProductsPageComponent },
   { path: 'track-order', component: TrackOrderComponent },
+  { path: 'account', component: AccountComponent },
   {
     path: 'privacy-policy',
     loadComponent: () =>
