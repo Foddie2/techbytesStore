@@ -104,7 +104,7 @@ type TabType = 'overview' | 'cart' | 'orders' | 'wishlist' | 'privacy';
           [class.border-blue-600]="activeTab() === 'overview'"
           [class.text-blue-600]="activeTab() === 'overview'"
           class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >Account Overview</a
+          >My Account</a
         >
         <a
           [routerLink]="['/account']"
@@ -126,7 +126,7 @@ type TabType = 'overview' | 'cart' | 'orders' | 'wishlist' | 'privacy';
           [class.border-blue-600]="activeTab() === 'orders'"
           [class.text-blue-600]="activeTab() === 'orders'"
           class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >Orders Ever Placed</a
+          >Orders Placed</a
         >
         <a
           [routerLink]="['/account']"
@@ -134,7 +134,7 @@ type TabType = 'overview' | 'cart' | 'orders' | 'wishlist' | 'privacy';
           [class.border-blue-600]="activeTab() === 'wishlist'"
           [class.text-blue-600]="activeTab() === 'wishlist'"
           class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >Saved Wishlist</a
+          >Wishlist</a
         >
         <a
           [routerLink]="['/account']"

@@ -150,11 +150,11 @@ import { CurrencyService } from '../../../core/services/currency';
         <a
           routerLink="/"
           class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1 group transition-transform duration-200 active:scale-95"
-          aria-label="KeyAnna E-Commerce Home"
+          aria-label="KeyNna E-Commerce Home"
         >
           <span class="text-blue-600 dark:text-blue-500 group-hover:text-blue-500 transition-colors"
             >Key</span
-          >Anna
+          >Nna
         </a>
 
         <!-- Search Bar (Desktop - SEO & Adsense Optimized Input) -->
@@ -214,7 +214,7 @@ import { CurrencyService } from '../../../core/services/currency';
             @if (isAccountOpen()) {
               <div
                 (mouseleave)="isAccountOpen.set(false)"
-                class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn"
+                class="absolute right-0 mt-2 w-54 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn"
               >
                 <!-- Greeting Header -->
                 <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
@@ -249,7 +249,7 @@ import { CurrencyService } from '../../../core/services/currency';
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                       />
                     </svg>
-                    <span>My Account Overview</span>
+                    <span>My Account</span>
                   </a>
 
                   <a
@@ -271,7 +271,7 @@ import { CurrencyService } from '../../../core/services/currency';
                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                       />
                     </svg>
-                    <span>Orders Ever Placed</span>
+                    <span>Orders Placed</span>
                   </a>
 
                   <a
@@ -293,7 +293,7 @@ import { CurrencyService } from '../../../core/services/currency';
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       />
                     </svg>
-                    <span>Saved Wishlist</span>
+                    <span>Wishlist</span>
                   </a>
                 </div>
 
@@ -584,13 +584,13 @@ import { CurrencyService } from '../../../core/services/currency';
           >
             All Products
           </a>
-          <a
+          <!-- <a
             routerLink="/best-sellers"
             routerLinkActive="text-blue-600 dark:text-blue-400 font-bold"
             class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
           >
             Best Sellers
-          </a>
+          </a> -->
           <a
             routerLink="/new-arrivals"
             routerLinkActive="text-blue-600 dark:text-blue-400 font-bold"

@@ -23,11 +23,13 @@ export interface CartDetails {
 
 export interface BuyerIdentityInput {
   email: string;
+  phone?: string; // M-Pesa phone number (e.g., 0712345678 or +254712345678)
   firstName: string;
   lastName: string;
   address1: string;
   city: string;
-  zip: string;
+  zip?: string;
+  countryCode?: string; // Defaults to 'KE' for Kenya
 }
 
 @Injectable({
@@ -114,14 +116,14 @@ export class CartService {
     try {
       const { data, errors }: any = await this.client.request(query, { variables: { cartId } });
       if (errors || !data?.cart) {
-        localStorage.removeItem('cart_id');
+        if (this.isBrowser) localStorage.removeItem('cart_id');
         this.cart.set(null);
         return;
       }
       this.cart.set(this.parseShopifyCart(data.cart));
     } catch (err) {
       console.error('Failed to fetch cart:', err);
-      localStorage.removeItem('cart_id');
+      if (this.isBrowser) localStorage.removeItem('cart_id');
       this.cart.set(null);
     } finally {
       this.isLoading.set(false);
@@ -130,7 +132,7 @@ export class CartService {
 
   async addToCart(variantId: string, quantity = 1): Promise<void> {
     this.isLoading.set(true);
-    const cartId = localStorage.getItem('cart_id');
+    const cartId = this.isBrowser ? localStorage.getItem('cart_id') : null;
 
     if (!cartId) {
       await this.createCart(variantId, quantity);
@@ -165,7 +167,7 @@ export class CartService {
         });
 
         if (errors || !data?.cartLinesAdd?.cart) {
-          localStorage.removeItem('cart_id');
+          if (this.isBrowser) localStorage.removeItem('cart_id');
           await this.createCart(variantId, quantity);
         } else {
           this.cart.set(this.parseShopifyCart(data.cartLinesAdd.cart));
@@ -270,14 +272,33 @@ export class CartService {
   }
 
   /**
-   * Native Shopify Storefront API Buyer Identity Mutation
-   * Pre-fills customer email and shipping address inside the Shopify Cart before checkout.
+   * Formats Kenyan phone numbers to E.164 standard (+254...) required by Shopify & M-Pesa gateways
    */
-  async updateBuyerIdentity(buyerInfo: BuyerIdentityInput): Promise<void> {
+  public formatMpesaPhone(phone?: string): string | undefined {
+    if (!phone) return undefined;
+    let cleaned = phone.replace(/\s+/g, '').replace(/-/g, '');
+    if (cleaned.startsWith('0')) {
+      cleaned = '+254' + cleaned.substring(1);
+    } else if (cleaned.startsWith('254')) {
+      cleaned = '+' + cleaned;
+    } else if (!cleaned.startsWith('+') && cleaned.length >= 9) {
+      cleaned = '+254' + cleaned;
+    }
+    return cleaned;
+  }
+
+  /**
+   * Native Shopify Storefront API Buyer Identity Mutation
+   * Pre-fills customer email, M-Pesa phone, and shipping address inside the Shopify Cart.
+   */
+  async updateBuyerIdentity(buyerInfo: BuyerIdentityInput): Promise<string | null> {
     const cartId = this.cart()?.id;
-    if (!cartId) return;
+    if (!cartId) return null;
 
     this.isLoading.set(true);
+    const formattedPhone = this.formatMpesaPhone(buyerInfo.phone);
+    const country = buyerInfo.countryCode || 'KE';
+
     const mutation = `
       mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
         cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
@@ -303,34 +324,63 @@ export class CartService {
       }
     `;
 
+    const buyerIdentityPayload: any = {
+      email: buyerInfo.email,
+      countryCode: country,
+      deliveryAddressPreferences: [
+        {
+          deliveryAddress: {
+            address1: buyerInfo.address1,
+            city: buyerInfo.city,
+            firstName: buyerInfo.firstName,
+            lastName: buyerInfo.lastName,
+            zip: buyerInfo.zip || '00100',
+            country: country,
+            ...(formattedPhone ? { phone: formattedPhone } : {}),
+          },
+        },
+      ],
+    };
+
+    if (formattedPhone) {
+      buyerIdentityPayload.phone = formattedPhone;
+    }
+
     try {
       const { data, errors }: any = await this.client.request(mutation, {
         variables: {
           cartId,
-          buyerIdentity: {
-            email: buyerInfo.email,
-            deliveryAddressPreferences: [
-              {
-                deliveryAddress: {
-                  address1: buyerInfo.address1,
-                  city: buyerInfo.city,
-                  firstName: buyerInfo.firstName,
-                  lastName: buyerInfo.lastName,
-                  zip: buyerInfo.zip,
-                },
-              },
-            ],
-          },
+          buyerIdentity: buyerIdentityPayload,
         },
       });
 
+      if (data?.cartBuyerIdentityUpdate?.userErrors?.length > 0) {
+        console.warn('Shopify Buyer Identity Errors:', data.cartBuyerIdentityUpdate.userErrors);
+      }
+
       if (data?.cartBuyerIdentityUpdate?.cart) {
-        this.cart.set(this.parseShopifyCart(data.cartBuyerIdentityUpdate.cart));
+        const updatedCart = this.parseShopifyCart(data.cartBuyerIdentityUpdate.cart);
+        this.cart.set(updatedCart);
+        return updatedCart.checkoutUrl;
       }
     } catch (err) {
       console.error('Failed to update buyer identity on cart:', err);
     } finally {
       this.isLoading.set(false);
+    }
+
+    return this.cart()?.checkoutUrl || null;
+  }
+
+  /**
+   * Binds customer details (including M-Pesa phone) to Shopify Cart and redirects directly to checkout
+   */
+  async proceedToPreFilledCheckout(buyerInfo: BuyerIdentityInput): Promise<void> {
+    const checkoutUrl = await this.updateBuyerIdentity(buyerInfo);
+    if (checkoutUrl && this.isBrowser) {
+      window.location.href = checkoutUrl;
+    } else {
+      this.proceedToCheckout();
     }
   }
 
@@ -365,13 +415,13 @@ export class CartService {
 
     const newCart = data?.cartCreate?.cart;
     if (newCart?.id) {
-      localStorage.setItem('cart_id', newCart.id);
+      if (this.isBrowser) localStorage.setItem('cart_id', newCart.id);
       this.cart.set(this.parseShopifyCart(newCart));
     }
   }
 
   private parseShopifyCart(rawCart: any): CartDetails {
-    const lines: CartItem[] = rawCart.lines.edges.map((edge: any) => {
+    const lines: CartItem[] = (rawCart.lines?.edges || []).map((edge: any) => {
       const node = edge.node;
       const merch = node.merchandise;
       return {

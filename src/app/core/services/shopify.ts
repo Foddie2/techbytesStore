@@ -152,4 +152,82 @@ export class ShopifyService {
       window.location.href = cart.checkoutUrl;
     }
   }
+
+  async updateCartBuyerIdentity(
+    cartId: string,
+    buyerDetails: {
+      email: string;
+      phone?: string;
+      firstName: string;
+      lastName: string;
+      address1: string;
+      city: string;
+      countryCode?: string;
+    },
+  ): Promise<string | null> {
+    const query = `
+      mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+        cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+          cart {
+            id
+            checkoutUrl
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      cartId,
+      buyerIdentity: {
+        email: buyerDetails.email,
+        phone: buyerDetails.phone || undefined,
+        deliveryAddressPreferences: [
+          {
+            deliveryAddress: {
+              firstName: buyerDetails.firstName,
+              lastName: buyerDetails.lastName,
+              address1: buyerDetails.address1,
+              city: buyerDetails.city,
+              country: buyerDetails.countryCode || 'KE',
+            },
+          },
+        ],
+      },
+    };
+
+    try {
+      // Execute query against Shopify Storefront API
+      const response = await this.graphQLRequest(query, variables);
+      const cartData = response?.data?.cartBuyerIdentityUpdate;
+
+      if (cartData?.userErrors?.length > 0) {
+        console.warn('Shopify Buyer Identity Errors:', cartData.userErrors);
+      }
+
+      return cartData?.cart?.checkoutUrl || null;
+    } catch (error) {
+      console.error('Failed to sync buyer identity with Shopify:', error);
+      return null;
+    }
+  }
+
+  // Fallback helper for raw Storefront GraphQL calls
+  private async graphQLRequest(query: string, variables: any): Promise<any> {
+    const domain = 'keyanna.myshopify.com';
+    const storefrontToken = 'YOUR_STOREFRONT_API_ACCESS_TOKEN';
+
+    const res = await fetch(`https://${domain}/api/2026-01/graphql.json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': storefrontToken,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+    return await res.json();
+  }
 }
