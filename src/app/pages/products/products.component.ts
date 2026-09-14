@@ -28,7 +28,7 @@ interface BrandCollection {
 @Component({
   selector: 'app-products-page',
   standalone: true,
-  imports: [CommonModule, ProductCardComponent],
+  imports: [CommonModule, ProductCardComponent, RouterLink],
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
       <!-- 1. SEO & Filter Header -->
@@ -37,29 +37,31 @@ interface BrandCollection {
       >
         <div>
           <span
-            class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest"
+            class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest"
           >
             Verified Hardware Collections
           </span>
-          <h1 class="text-3xl font-black text-slate-900 dark:text-white capitalize mt-1">
+          <h1
+            class="text-3xl font-black text-slate-900 dark:text-white capitalize mt-1 tracking-tight"
+          >
             {{ pageTitle() }}
           </h1>
           <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            Browse genuine inventory grouped by verified tech brands & partners.
+            Browse genuine inventory grouped by verified tech brands & edge partners.
           </p>
         </div>
 
         @if (activeFilter()) {
           <button
             (click)="clearFilter()"
-            class="self-start md:self-auto text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-2"
+            class="self-start md:self-auto text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-2 rounded-full transition-all transform-gpu active:scale-95 cursor-pointer flex items-center gap-2"
           >
             <span>✕ Clear Filter: "{{ activeFilter() }}"</span>
           </button>
         }
       </div>
 
-      <!-- 2. Initial Full-Page Loading Skeleton -->
+      <!-- 2. Loading Skeleton -->
       @if (isLoading()) {
         <div class="space-y-10 animate-pulse">
           @for (i of [1, 2, 3]; track i) {
@@ -68,7 +70,7 @@ interface BrandCollection {
               <div class="flex gap-6 overflow-hidden">
                 @for (j of [1, 2, 3, 4]; track j) {
                   <div
-                    class="w-72 sm:w-80 h-96 bg-slate-200 dark:bg-slate-800/80 rounded-2xl shrink-0"
+                    class="w-72 sm:w-80 h-96 bg-slate-200 dark:bg-slate-800/80 rounded-3xl shrink-0"
                   ></div>
                 }
               </div>
@@ -77,12 +79,12 @@ interface BrandCollection {
         </div>
       }
 
-      <!-- 3. Brand Collection Horizontal Scrolling Rows -->
+      <!-- 3. Brand Collections with Inline Ad Slots -->
       @if (!isLoading() && brandCollections().length > 0) {
         <div class="space-y-14">
           @for (collection of brandCollections(); track collection.brand; let brandIdx = $index) {
             <section class="space-y-4">
-              <!-- Brand Collection Header -->
+              <!-- Collection Header -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
@@ -96,25 +98,63 @@ interface BrandCollection {
                 </div>
               </div>
 
-              <!-- Relative Row Wrapper Flanked by End Navigation Buttons -->
-              <div class="relative group">
-                <!-- Left Flanking Navigation Arrow -->
+              <!-- Horizontal Scroll with End Navigation -->
+              <div class="relative group/row">
+                <!-- Left Flanking Arrow -->
                 <button
                   (click)="scrollContainer(brandIdx, 'left')"
                   aria-label="Scroll left"
-                  class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95"
+                  class="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300 cursor-pointer backdrop-blur-md opacity-90 sm:opacity-0 sm:group-hover/row:opacity-100 active:scale-95 transform-gpu"
                 >
                   ←
                 </button>
 
-                <!-- Horizontal Scroll Container with Infinite End-Detection -->
+                <!-- Scroll Container -->
                 <div
                   #brandScrollContainer
                   (scroll)="onHorizontalScroll($event, brandIdx)"
-                  class="flex gap-6 overflow-x-auto scroll-smooth pb-4 px-1 no-scrollbar snap-x snap-mandatory"
+                  class="flex gap-6 overflow-x-auto scroll-smooth pb-6 px-1 no-scrollbar snap-x snap-mandatory"
                 >
-                  @for (product of collection.products; track product.id) {
-                    <div class="w-72 sm:w-80 shrink-0 snap-start">
+                  @for (product of collection.products; track product.id; let idx = $index) {
+                    <!-- Dynamic Inline Ad Slot -->
+                    @if (idx === 1) {
+                      <div class="w-72 sm:w-80 shrink-0 snap-start flex">
+                        <div
+                          class="w-full flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-900 via-slate-900 to-blue-950 text-white border border-blue-800/50 shadow-lg relative overflow-hidden group/ad transition-all duration-300 transform-gpu hover:-translate-y-1.5 hover:shadow-blue-900/30"
+                        >
+                          <div
+                            class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/20 blur-3xl rounded-full group-hover/ad:bg-blue-500/40 transition-colors duration-500"
+                          ></div>
+                          <div class="space-y-4 relative z-10">
+                            <span
+                              class="text-[10px] font-black uppercase tracking-widest text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-md border border-blue-500/30"
+                            >
+                              Sponsored Partner
+                            </span>
+                            <h4 class="text-xl font-black text-white leading-tight">
+                              Secure M-Pesa Checkout
+                            </h4>
+                            <p class="text-xs text-slate-300">
+                              Bypass manual typing. Connect your M-Pesa number directly for instant
+                              STK push confirmations at checkout.
+                            </p>
+                          </div>
+                          <div class="pt-6 relative z-10">
+                            <a
+                              routerLink="/cart"
+                              class="inline-flex items-center justify-center w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3.5 rounded-xl transition cursor-pointer active:scale-95 transform-gpu shadow-md"
+                            >
+                              Setup Express Payment →
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Isolated Product Card -->
+                    <div
+                      class="w-72 sm:w-80 shrink-0 snap-start transition-all duration-300 transform-gpu hover:-translate-y-1.5 hover:shadow-2xl rounded-3xl"
+                    >
                       <app-product-card
                         [product]="product"
                         (selectProduct)="openProductModal($event)"
@@ -122,37 +162,31 @@ interface BrandCollection {
                     </div>
                   }
 
-                  <!-- Shimmer Loading Effect Card for Endless Scroll Feel -->
+                  <!-- Endless Scroll Shimmer Effect -->
                   @if (collection.isLoadingMore) {
                     @for (shimmer of [1, 2]; track shimmer) {
                       <div
-                        class="w-72 sm:w-80 shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 space-y-4 animate-pulse"
+                        class="w-72 sm:w-80 shrink-0 snap-start bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-3xl p-4 space-y-4 animate-pulse"
                       >
                         <div
-                          class="w-full h-48 bg-slate-200 dark:bg-slate-700/60 rounded-xl relative overflow-hidden"
+                          class="w-full h-56 bg-slate-200 dark:bg-slate-700/60 rounded-2xl relative overflow-hidden"
                         >
                           <div
-                            class="absolute inset-0 bg-linear-to-r from-transparent via-white/20 dark:via-slate-600/20 to-transparent animate-shimmer"
+                            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-slate-600/20 to-transparent animate-shimmer"
                           ></div>
                         </div>
                         <div class="h-4 bg-slate-200 dark:bg-slate-700/60 rounded w-3/4"></div>
                         <div class="h-3 bg-slate-200 dark:bg-slate-700/60 rounded w-1/2"></div>
-                        <div
-                          class="pt-4 border-t border-slate-100 dark:border-slate-700/60 flex justify-between items-center"
-                        >
-                          <div class="h-6 bg-slate-200 dark:bg-slate-700/60 rounded w-20"></div>
-                          <div class="h-8 bg-slate-200 dark:bg-slate-700/60 rounded w-24"></div>
-                        </div>
                       </div>
                     }
                   }
                 </div>
 
-                <!-- Right Flanking Navigation Arrow -->
+                <!-- Right Flanking Arrow -->
                 <button
                   (click)="scrollContainer(brandIdx, 'right')"
                   aria-label="Scroll right"
-                  class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full border border-slate-200/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 hover:scale-110 transition-all duration-200 shadow-md cursor-pointer backdrop-blur-xs opacity-90 sm:opacity-0 sm:group-hover:opacity-100 active:scale-95"
+                  class="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300 cursor-pointer backdrop-blur-md opacity-90 sm:opacity-0 sm:group-hover/row:opacity-100 active:scale-95 transform-gpu"
                 >
                   →
                 </button>
@@ -165,98 +199,71 @@ interface BrandCollection {
       <!-- 4. Empty Search State -->
       @if (!isLoading() && brandCollections().length === 0) {
         <div
-          class="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3"
+          class="text-center py-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-sm"
         >
-          <span class="text-5xl block">🔎</span>
+          <span class="text-6xl block">📡</span>
           <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-            No products match your filter
+            No hardware matches your filter
           </h3>
           <p class="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-            We couldn't find hardware matching "{{ activeFilter() }}". Try adjusting your search or
-            category filter.
+            We couldn't find items matching "{{ activeFilter() }}".
           </p>
           <button
             (click)="clearFilter()"
-            class="mt-2 inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition cursor-pointer"
+            class="mt-4 inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition cursor-pointer active:scale-95 transform-gpu shadow-md"
           >
-            Show All Catalog Items
+            Clear Filters & View Catalog
           </button>
         </div>
       }
     </div>
 
-    <!-- 5. MULTI-MODAL PRODUCT SHOWCASE -->
+    <!-- 5. MODERN GRAPHICAL PRODUCT MODAL -->
     @if (selectedProduct()) {
       <div
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md animate-fadeIn"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-lg animate-fadeIn"
         (click)="closeProductModal()"
       >
         <div
           (click)="$event.stopPropagation()"
-          class="relative w-full max-w-4xl max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-y-auto p-6 sm:p-8 space-y-8 no-scrollbar"
+          class="relative w-full max-w-4xl max-h-[92vh] bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/50 dark:border-slate-800/80 shadow-2xl overflow-y-auto p-6 sm:p-8 space-y-8 no-scrollbar transform-gpu transition-all scale-100"
         >
           <!-- Close Button -->
           <button
             (click)="closeProductModal()"
-            aria-label="Close modal"
-            class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer z-10"
+            class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all cursor-pointer z-10 hover:scale-110 active:scale-95"
           >
             ✕
           </button>
 
-          <!-- Top Grid: Gallery & Product Info -->
+          <!-- Modal Top Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <!-- Left: Multi-Image Gallery & Wishlist Action -->
+            <!-- Left Column: Gallery -->
             <div class="space-y-4">
               <div
-                class="relative w-full h-80 bg-slate-100 dark:bg-slate-950 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 flex items-center justify-center"
+                class="relative w-full aspect-square bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 flex items-center justify-center group"
               >
                 @if (activeModalImage()) {
                   <img
-                    [src]="activeModalImage()"
+                    [src]="getShopifyEdgeOptimizedImage(activeModalImage(), 800)"
                     [alt]="selectedProduct()?.title"
-                    class="w-full h-full object-cover transition-all duration-300"
+                    class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />
-                } @else {
-                  <span class="text-slate-400 text-sm">No Preview Available</span>
                 }
-
-                <!-- Wishlist Heart Toggle Floating Badge -->
-                <button
-                  (click)="toggleWishlist()"
-                  [class.text-red-500]="isWishlisted()"
-                  [class.bg-red-50]="isWishlisted()"
-                  class="absolute top-3 right-3 p-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-md hover:scale-110 transition cursor-pointer text-slate-400"
-                  title="Toggle Wishlist"
-                >
-                  <svg
-                    class="w-5 h-5"
-                    [attr.fill]="isWishlisted() ? 'currentColor' : 'none'"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                </button>
               </div>
 
-              <!-- Thumbnails Selector -->
+              <!-- Thumbnails -->
               @if (getModalImages(selectedProduct()).length > 1) {
-                <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
                   @for (imgUrl of getModalImages(selectedProduct()); track $index) {
                     <button
                       (click)="activeImageIndex.set($index)"
                       [class.ring-2]="activeImageIndex() === $index"
-                      class="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 shrink-0 cursor-pointer ring-blue-600 transition"
+                      class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 shrink-0 cursor-pointer ring-blue-600 transition-all transform-gpu hover:-translate-y-1 hover:shadow-md"
                     >
                       <img
-                        [src]="imgUrl"
-                        [alt]="'Thumbnail ' + $index"
+                        [src]="getShopifyEdgeOptimizedImage(imgUrl, 150)"
+                        alt="Thumbnail"
                         class="w-full h-full object-cover"
                       />
                     </button>
@@ -265,74 +272,71 @@ interface BrandCollection {
               }
             </div>
 
-            <!-- Right: Details, Regional Price & Purchase CTA -->
-            <div class="space-y-5">
+            <!-- Right Column: Details & Purchase CTA -->
+            <div class="space-y-6 pt-2">
               <div>
                 <span
-                  class="inline-block bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-2"
+                  class="inline-block text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2"
                 >
                   {{ getBrandName(selectedProduct()) }}
                 </span>
-                <h3 class="text-2xl font-black text-slate-900 dark:text-white leading-tight">
+                <h3
+                  class="text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight"
+                >
                   {{ selectedProduct()?.title }}
                 </h3>
               </div>
 
-              <!-- Unified Regional Price Display -->
-              <div class="flex items-baseline gap-3">
-                <span class="text-3xl font-black text-slate-900 dark:text-white">
+              <div class="flex items-baseline gap-4">
+                <span class="text-4xl font-black text-slate-900 dark:text-white">
                   {{ currencyService.formatPrice(selectedProduct()) }}
                 </span>
                 <span
-                  class="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800/60"
+                  class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800/60"
                 >
-                  In Stock & Ready To Dispatch
+                  Ready to Ship
                 </span>
               </div>
 
               <p
-                class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-32 overflow-y-auto pr-2 no-scrollbar"
+                class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-h-36 overflow-y-auto pr-2 no-scrollbar"
               >
                 {{ selectedProduct()?.description }}
               </p>
 
-              <!-- In-App Cart Trigger CTA -->
+              <!-- Add to Cart CTA -->
               <button
                 (click)="addToCart(selectedProduct())"
                 [disabled]="isModalAdding()"
-                class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-blue-600/30 transition text-sm cursor-pointer flex items-center justify-center gap-2"
+                class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-blue-600/30 transition-all transform-gpu cursor-pointer active:scale-95 flex items-center justify-center gap-2"
               >
-                <span>{{ isModalAdding() ? 'Adding to Cart...' : 'Add to Cart' }}</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
+                <span>{{
+                  isModalAdding() ? 'Syncing to Checkout Vault...' : 'Add Hardware to Cart'
+                }}</span>
               </button>
 
               <!-- Safe Payment Trust Bar -->
               <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span
+                  class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block"
+                >
                   🔒 Guaranteed Safe & Encrypted Checkout
                 </span>
                 <div
                   class="flex flex-wrap gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300"
                 >
                   <span
-                    class="px-2.5 py-1 bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 rounded-md"
+                    class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded-lg font-bold flex items-center gap-1"
                   >
                     💚 M-PESA
                   </span>
                   <span
-                    class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
+                    class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-1"
                   >
                     💳 Visa / Mastercard
                   </span>
                   <span
-                    class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md"
+                    class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-1"
                   >
                     🛡️ 256-Bit SSL
                   </span>
@@ -341,41 +345,50 @@ interface BrandCollection {
             </div>
           </div>
 
-          <!-- Bottom: Smart Related Products Carousel -->
-          <div class="pt-6 border-t border-slate-200 dark:border-slate-800">
-            <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-4">
-              More from {{ getBrandName(selectedProduct()) }}
-            </h4>
+          <!-- Bottom Section: Related Items in Catalog -->
+          @if (getRelatedProducts(selectedProduct()).length > 0) {
+            <div class="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+              <div>
+                <h4 class="text-base font-black text-slate-900 dark:text-white">
+                  Related Items in Catalog
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                  Matched by category & brand
+                </p>
+              </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              @for (related of getRelatedProducts(selectedProduct()); track related.id) {
-                <div
-                  (click)="openProductModal(related)"
-                  class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition group flex gap-3 items-center"
-                >
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                @for (related of getRelatedProducts(selectedProduct()); track related.id) {
                   <div
-                    class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shrink-0"
+                    (click)="openProductModal(related)"
+                    class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-2xl cursor-pointer hover:border-blue-500 transition-all duration-200 transform-gpu hover:-translate-y-1 group/rel flex gap-3 items-center"
                   >
-                    @if (getModalImages(related)[0]) {
-                      <img
-                        [src]="getModalImages(related)[0]"
-                        [alt]="related.title"
-                        class="w-full h-full object-cover group-hover:scale-105 transition"
-                      />
-                    }
+                    <div
+                      class="w-16 h-16 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shrink-0 border border-slate-200/60 dark:border-slate-800"
+                    >
+                      @if (getModalImages(related)[0]) {
+                        <img
+                          [src]="getShopifyEdgeOptimizedImage(getModalImages(related)[0], 150)"
+                          [alt]="related.title"
+                          class="w-full h-full object-cover group-hover/rel:scale-105 transition-transform duration-300"
+                        />
+                      }
+                    </div>
+                    <div class="overflow-hidden">
+                      <h5
+                        class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover/rel:text-blue-600 dark:group-hover/rel:text-blue-400 transition-colors"
+                      >
+                        {{ related.title }}
+                      </h5>
+                      <p class="text-xs font-extrabold text-blue-600 dark:text-blue-400 mt-1">
+                        {{ currencyService.formatPrice(related) }}
+                      </p>
+                    </div>
                   </div>
-                  <div class="overflow-hidden">
-                    <h5 class="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {{ related.title }}
-                    </h5>
-                    <p class="text-xs font-bold text-blue-600 dark:text-blue-400 mt-1">
-                      {{ currencyService.formatPrice(related) }}
-                    </p>
-                  </div>
-                </div>
-              }
+                }
+              </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     }
@@ -400,6 +413,17 @@ interface BrandCollection {
       .animate-shimmer {
         animation: shimmer 1.5s infinite;
       }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
     `,
   ],
 })
@@ -415,17 +439,12 @@ export class ProductsPageComponent implements OnInit {
   isLoading = signal<boolean>(true);
   pageTitle = signal<string>('All Products');
   activeFilter = signal<string>('');
-
-  // Brand Collections State
   brandCollections = signal<BrandCollection[]>([]);
 
-  // Modal State
   selectedProduct = signal<Product | null>(null);
   activeImageIndex = signal<number>(0);
   isModalAdding = signal<boolean>(false);
-  isWishlisted = signal<boolean>(false);
 
-  // Computed Image for Showcase Modal
   activeModalImage = computed(() => {
     const prod = this.selectedProduct();
     if (!prod) return null;
@@ -448,6 +467,15 @@ export class ProductsPageComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  getShopifyEdgeOptimizedImage(url: string | null, width: number): string {
+    if (!url) return '';
+    if (url.includes('cdn.shopify.com')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}width=${width}&crop=center`;
+    }
+    return url;
   }
 
   private applyFilterAndGroup(category?: string, query?: string): void {
@@ -473,7 +501,6 @@ export class ProductsPageComponent implements OnInit {
       this.pageTitle.set('All Products');
     }
 
-    // Group items dynamically into Brand Collections
     const groups: Record<string, Product[]> = {};
     filtered.forEach((product) => {
       const brand = this.getBrandName(product);
@@ -496,72 +523,50 @@ export class ProductsPageComponent implements OnInit {
     this.applyFilterAndGroup();
   }
 
-  // Extract brand or vendor name safely
   getBrandName(product: any): string {
     if (!product) return 'TechBytes';
     if (product.vendor) return product.vendor;
-
     const title = (product.title || '').toLowerCase();
-    if (title.includes('apple') || title.includes('iphone') || title.includes('macbook'))
-      return 'Apple';
-    if (title.includes('samsung') || title.includes('galaxy')) return 'Samsung';
-    if (title.includes('dell')) return 'Dell';
-    if (title.includes('hp')) return 'HP';
-    if (title.includes('sony')) return 'Sony';
-    if (title.includes('logitech')) return 'Logitech';
-    if (title.includes('asus')) return 'Asus';
-
+    if (title.includes('apple') || title.includes('iphone')) return 'Apple';
+    if (title.includes('samsung')) return 'Samsung';
     return 'Premium Gear';
   }
 
-  // Scroll Container Left/Right Button Action
   scrollContainer(index: number, direction: 'left' | 'right'): void {
     const containers = this.scrollContainers.toArray();
     if (containers[index]) {
       const el = containers[index].nativeElement;
-      const amount = direction === 'left' ? -340 : 340;
+      const amount = direction === 'left' ? -350 : 350;
       el.scrollBy({ left: amount, behavior: 'smooth' });
     }
   }
 
-  // Infinite Scroll Trigger on Horizontal End-Scroll
   onHorizontalScroll(event: Event, brandIndex: number): void {
     const target = event.target as HTMLElement;
     const scrollEndThreshold = target.scrollWidth - target.scrollLeft - target.clientWidth;
 
-    // Trigger shimmer loader when scrolled within 100px of right boundary
     if (scrollEndThreshold < 100) {
       const current = this.brandCollections();
       const col = current[brandIndex];
-
       if (col && !col.isLoadingMore && col.hasMore) {
-        // Activate shimmer effect
         col.isLoadingMore = true;
         this.brandCollections.set([...current]);
-
-        // Mock lazy loading appended items
         setTimeout(() => {
           col.isLoadingMore = false;
-          col.hasMore = col.products.length < 12; // Cap endless generation
+          col.hasMore = col.products.length < 12;
           this.brandCollections.set([...current]);
         }, 1200);
       }
     }
   }
 
-  // Multi-Modal Controls
   openProductModal(product: Product): void {
     this.selectedProduct.set(product);
     this.activeImageIndex.set(0);
-    this.isWishlisted.set(false);
   }
 
   closeProductModal(): void {
     this.selectedProduct.set(null);
-  }
-
-  toggleWishlist(): void {
-    this.isWishlisted.set(!this.isWishlisted());
   }
 
   getModalImages(product: any): string[] {
@@ -573,7 +578,11 @@ export class ProductsPageComponent implements OnInit {
     if (!currentProduct) return [];
     const brand = this.getBrandName(currentProduct);
     return this.allProducts()
-      .filter((p) => p.id !== currentProduct.id && this.getBrandName(p) === brand)
+      .filter(
+        (p) =>
+          p.id !== currentProduct.id &&
+          this.getBrandName(p) === brand,
+      )
       .slice(0, 3);
   }
 

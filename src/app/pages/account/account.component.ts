@@ -1,12 +1,26 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { createStorefrontApiClient } from '@shopify/storefront-api-client';
+import { environment } from '../../../environments/environment';
 
 import { CartService } from '../../core/services/cart';
 import { CurrencyService } from '../../core/services/currency';
 import { AuthService } from '../../core/services/auth';
 
-type TabType = 'overview' | 'cart' | 'orders' | 'wishlist' | 'privacy';
+type TabType = 'overview' | 'orders' | 'wishlist' | 'privacy';
+
+export interface CustomerOrder {
+  id: string;
+  orderNumber: string;
+  date: string;
+  fulfillmentStatus: 'Dispatched & Tracked' | 'In Transit' | 'Delivered' | 'Processing';
+  statusClass: string;
+  itemCount: number;
+  totalAmount: number;
+  currencyCode: string;
+  itemsSummary: string;
+}
 
 @Component({
   selector: 'app-account',
@@ -14,42 +28,62 @@ type TabType = 'overview' | 'cart' | 'orders' | 'wishlist' | 'privacy';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <!-- Account Central Header -->
+      <!-- 1. GOOGLE SYNCED PROFILE HEADER -->
       <div
         class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
       >
         <div class="flex items-center gap-4">
-          <div
-            class="w-16 h-16 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 font-black text-2xl flex items-center justify-center border border-blue-200 dark:border-blue-900/50 shadow-inner"
-          >
-            {{ userInitials() }}
+          <div class="relative">
+            @if (authService.currentUser()?.picture) {
+              <img
+                [src]="authService.currentUser()?.picture"
+                [alt]="userName()"
+                referrerpolicy="no-referrer"
+                (error)="authService.currentUser()!.picture = undefined"
+                class="w-16 h-16 rounded-2xl border-2 border-blue-600/20 object-cover shadow-sm"
+              />
+            } @else {
+              <div
+                class="w-16 h-16 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 font-black text-2xl flex items-center justify-center border border-blue-200 dark:border-blue-900/50 shadow-inner"
+              >
+                {{ userInitials() }}
+              </div>
+            }
           </div>
+
           <div>
             <div class="flex items-center gap-2">
               <span
                 class="text-xs font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider"
-                >Account Central</span
               >
+                Customer Portal
+              </span>
               <span
-                class="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60"
+                [class]="
+                  authService.isLoggedIn()
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'
+                    : 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                "
+                class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
               >
-                Verified Customer
+                {{ authService.isLoggedIn() ? 'Google Authenticated' : 'Guest Account' }}
               </span>
             </div>
+
             <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-0.5">
-              My Customer Dashboard
+              {{ userName() }}
             </h1>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {{ userName() }} ({{ userEmail() }})
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {{ userEmail() }}
             </p>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-3">
           @if (!authService.isLoggedIn()) {
             <button
-              (click)="authService.loginWithGoogleMock()"
-              class="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold text-xs px-4 py-2.5 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-xs transition cursor-pointer"
+              (click)="authService.loginWithGoogle()"
+              class="bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold text-xs px-5 py-3 rounded-2xl shadow-md transition cursor-pointer flex items-center gap-2.5 hover:bg-slate-800 dark:hover:bg-slate-100"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24">
                 <path
@@ -79,227 +113,455 @@ type TabType = 'overview' | 'cart' | 'orders' | 'wishlist' | 'privacy';
               Sign Out
             </button>
           }
-
-          <div
-            class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60"
-          >
-            <span class="text-lg">🛡️</span>
-            <div class="text-xs">
-              <span class="font-bold text-slate-900 dark:text-white block"
-                >256-Bit Vault Security</span
-              >
-              <span class="text-slate-500">Shopify Checkout Active</span>
-            </div>
-          </div>
         </div>
       </div>
 
-      <!-- Tab Bar -->
+      <!-- 2. NAVIGATION TABS -->
       <div
-        class="flex border-b border-slate-200 dark:border-slate-800 gap-2 sm:gap-6 overflow-x-auto no-scrollbar"
+        class="flex border-b border-slate-200 dark:border-slate-800 gap-6 overflow-x-auto no-scrollbar"
       >
         <a
           [routerLink]="['/account']"
           [queryParams]="{ tab: 'overview' }"
           [class.border-blue-600]="activeTab() === 'overview'"
           [class.text-blue-600]="activeTab() === 'overview'"
-          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >My Account</a
+          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition cursor-pointer"
         >
-        <a
-          [routerLink]="['/account']"
-          [queryParams]="{ tab: 'cart' }"
-          [class.border-blue-600]="activeTab() === 'cart'"
-          [class.text-blue-600]="activeTab() === 'cart'"
-          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap flex items-center gap-2"
-        >
-          <span>Active Cart State</span>
-          @if (cartService.itemCount() > 0) {
-            <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{{
-              cartService.itemCount()
-            }}</span>
-          }
+          Dashboard Overview
         </a>
         <a
           [routerLink]="['/account']"
           [queryParams]="{ tab: 'orders' }"
           [class.border-blue-600]="activeTab() === 'orders'"
           [class.text-blue-600]="activeTab() === 'orders'"
-          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >Orders Placed</a
+          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition cursor-pointer flex items-center gap-2"
         >
-        <a
-          [routerLink]="['/account']"
-          [queryParams]="{ tab: 'wishlist' }"
-          [class.border-blue-600]="activeTab() === 'wishlist'"
-          [class.text-blue-600]="activeTab() === 'wishlist'"
-          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >Wishlist</a
-        >
-        <a
-          [routerLink]="['/account']"
-          [queryParams]="{ tab: 'privacy' }"
-          [class.border-blue-600]="activeTab() === 'privacy'"
-          [class.text-blue-600]="activeTab() === 'privacy'"
-          class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition whitespace-nowrap"
-          >Data Protection & Privacy</a
-        >
+          <span>Purchase History</span>
+          @if (authService.isLoggedIn() && orders().length > 0) {
+            <span
+              class="bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-[10px] font-black px-2 py-0.5 rounded-full"
+            >
+              {{ orders().length }}
+            </span>
+          }
+        </a>
       </div>
 
-      <!-- Content Tabs -->
+      <!-- 3. OVERVIEW TAB VIEW -->
       @if (activeTab() === 'overview') {
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div
-            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3"
-          >
-            <span
-              class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block"
-              >Live Cart Session</span
+        <div class="space-y-6">
+          @if (!authService.isLoggedIn()) {
+            <div
+              class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-blue-900/40 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
             >
-            <h3 class="text-2xl font-black text-slate-900 dark:text-white">
-              {{ cartService.itemCount() }} Items
-            </h3>
-            <p class="text-xs text-slate-500">Items saved in your active checkout session.</p>
-            <button
-              (click)="cartService.openDrawer()"
-              class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              <div class="space-y-1.5 max-w-xl">
+                <span
+                  class="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider"
+                >
+                  Sync Google Profile
+                </span>
+                <h3 class="text-xl font-black">Sign in to view real-time orders & shipments</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Authenticate with your Google account to view synced purchase records, save
+                  shipping addresses, and track real-time dispatches.
+                </p>
+              </div>
+
+              <button
+                (click)="authService.loginWithGoogle()"
+                class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition cursor-pointer shadow-lg whitespace-nowrap"
+              >
+                Authenticate with Google →
+              </button>
+            </div>
+          }
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3 shadow-xs"
             >
-              Inspect Cart Drawer →
-            </button>
-          </div>
-          <div
-            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3"
-          >
-            <span
-              class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block"
-              >Total Orders Placed</span
+              <span
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block"
+              >
+                Active Session Cart
+              </span>
+              <h3 class="text-2xl font-black text-slate-900 dark:text-white">
+                {{ cartService.itemCount() }} {{ cartService.itemCount() === 1 ? 'Item' : 'Items' }}
+              </h3>
+              <p class="text-xs text-slate-500">
+                Products currently saved in your active checkout drawer.
+              </p>
+              <button
+                (click)="cartService.openDrawer()"
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              >
+                Open Cart Drawer →
+              </button>
+            </div>
+
+            <div
+              class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3 shadow-xs"
             >
-            <h3 class="text-2xl font-black text-slate-900 dark:text-white">
-              {{ orders().length }} Dispatches
-            </h3>
-            <p class="text-xs text-slate-500">Verified purchases tied to this customer account.</p>
-            <a
-              [routerLink]="['/account']"
-              [queryParams]="{ tab: 'orders' }"
-              class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-block"
-              >View Complete History →</a
+              <span
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block"
+              >
+                Total Orders Synced
+              </span>
+              <h3 class="text-2xl font-black text-slate-900 dark:text-white">
+                {{ authService.isLoggedIn() ? orders().length : 0 }} Dispatches
+              </h3>
+              <p class="text-xs text-slate-500">
+                {{
+                  authService.isLoggedIn()
+                    ? 'Live order dispatches fetched directly from Shopify API.'
+                    : 'Sign in to fetch your purchase records.'
+                }}
+              </p>
+              <a
+                [routerLink]="['/account']"
+                [queryParams]="{ tab: 'orders' }"
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-block"
+              >
+                View Purchase History →
+              </a>
+            </div>
+
+            <div
+              class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3 shadow-xs"
             >
-          </div>
-          <div
-            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 space-y-3"
-          >
-            <span
-              class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block"
-              >Active Currency</span
-            >
-            <h3 class="text-2xl font-black text-slate-900 dark:text-white">
-              {{ currencyService.selectedCurrency().code }}
-            </h3>
-            <p class="text-xs text-slate-500">Auto-detected regional currency rate.</p>
+              <span
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block"
+              >
+                Logistics Center
+              </span>
+              <h3 class="text-2xl font-black text-slate-900 dark:text-white">Track Order</h3>
+              <p class="text-xs text-slate-500">
+                Inspect carrier updates, waybill status, and delivery progress.
+              </p>
+              <a
+                routerLink="/track-order"
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-block"
+              >
+                Launch Tracker →
+              </a>
+            </div>
           </div>
         </div>
       }
 
+      <!-- 4. PURCHASES & DISPATCHES TAB VIEW -->
       @if (activeTab() === 'orders') {
         <div
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs"
         >
-          <div class="border-b border-slate-100 dark:border-slate-800 pb-4">
-            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Orders Ever Placed</h3>
-            <p class="text-xs text-slate-500">
-              Official order fulfillment records synced directly with Shopify API.
-            </p>
+          <div
+            class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 dark:border-slate-800 pb-4 gap-2"
+          >
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+                Real Shopify Purchases
+              </h3>
+              <p class="text-xs text-slate-500">
+                Verified order fulfillment records synced live from Shopify Storefront API.
+              </p>
+            </div>
+            <a
+              routerLink="/track-order"
+              class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Open General Tracker →
+            </a>
           </div>
-          <div class="space-y-4">
-            @for (order of orders(); track order.id) {
+
+          @if (isLoadingOrders()) {
+            <div class="text-center py-12 space-y-3">
               <div
-                class="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 bg-slate-50/50 dark:bg-slate-800/30"
-              >
-                <div
-                  class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3"
-                >
-                  <div>
-                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400"
-                      >Order {{ order.orderNumber }}</span
-                    >
-                    <span class="text-xs text-slate-400 block sm:inline sm:ml-2"
-                      >Placed on {{ order.date }}</span
-                    >
-                  </div>
-                  <span
-                    class="text-xs font-bold px-3 py-1 rounded-full w-max"
-                    [class]="order.statusClass"
-                    >{{ order.fulfillmentStatus }}</span
-                  >
-                </div>
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-slate-600 dark:text-slate-300">
-                    <span>{{ order.itemCount }} Items</span> •
-                    <span class="font-bold text-slate-900 dark:text-white">{{
-                      currencyService.formatPrice({
-                        amount: order.totalAmount,
-                        currencyCode: 'USD',
-                      })
-                    }}</span>
-                  </div>
-                  <a
-                    [routerLink]="['/track-order']"
-                    [queryParams]="{ order: order.orderNumber }"
-                    class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                    >Track Shipment →</a
-                  >
-                </div>
+                class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"
+              ></div>
+              <p class="text-xs font-bold text-slate-500">
+                Syncing live orders from Shopify API...
+              </p>
+            </div>
+          } @else if (!authService.isLoggedIn()) {
+            <div class="text-center py-12 space-y-4 max-w-sm mx-auto">
+              <span class="text-4xl block">🔒</span>
+              <div class="space-y-1">
+                <h4 class="text-base font-bold text-slate-900 dark:text-white">Sign In Required</h4>
+                <p class="text-xs text-slate-500">
+                  Please sign in with Google to view real orders synced to your profile.
+                </p>
               </div>
-            }
-          </div>
+              <button
+                (click)="authService.loginWithGoogle()"
+                class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition cursor-pointer shadow-md inline-flex items-center gap-2"
+              >
+                <span>Sign In with Google</span>
+              </button>
+            </div>
+          } @else if (orders().length === 0) {
+            <div class="text-center py-12 space-y-3">
+              <span class="text-4xl block">📦</span>
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white">
+                No Shopify Orders Found
+              </h4>
+              <p class="text-xs text-slate-500">
+                No purchases have been recorded under {{ userEmail() }} yet.
+              </p>
+              <a
+                routerLink="/products"
+                class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md"
+              >
+                Browse Catalog
+              </a>
+            </div>
+          } @else {
+            <div class="space-y-4">
+              @for (order of orders(); track order.id) {
+                <div
+                  class="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 bg-slate-50/50 dark:bg-slate-800/30 hover:border-blue-500/40 transition"
+                >
+                  <div
+                    class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3"
+                  >
+                    <div>
+                      <span class="text-xs font-bold text-blue-600 dark:text-blue-400">
+                        Order {{ order.orderNumber }}
+                      </span>
+                      <span class="text-xs text-slate-400 block sm:inline sm:ml-2">
+                        Placed on {{ order.date }}
+                      </span>
+                    </div>
+                    <span
+                      class="text-xs font-bold px-3 py-1 rounded-full w-max"
+                      [class]="order.statusClass"
+                    >
+                      {{ order.fulfillmentStatus }}
+                    </span>
+                  </div>
+
+                  <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                    <div class="space-y-1 text-xs">
+                      <p class="font-bold text-slate-900 dark:text-white">
+                        {{ order.itemsSummary }}
+                      </p>
+                      <p class="text-slate-500 dark:text-slate-400">
+                        Total Amount:
+                        <span class="font-black text-slate-900 dark:text-white">
+                          {{
+                            currencyService.formatPrice({
+                              amount: order.totalAmount.toString(),
+                              currencyCode: order.currencyCode || 'USD',
+                            })
+                          }}
+                        </span>
+                      </p>
+                    </div>
+
+                    <a
+                      [routerLink]="['/track-order']"
+                      [queryParams]="{ order: order.orderNumber, email: userEmail() }"
+                      class="inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm transition whitespace-nowrap"
+                    >
+                      <span>Track Shipment</span>
+                      <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              }
+            </div>
+          }
         </div>
       }
     </div>
   `,
+  styles: [
+    `
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    `,
+  ],
 })
 export class AccountComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private platformId = inject(PLATFORM_ID);
   public cartService = inject(CartService);
   public currencyService = inject(CurrencyService);
   public authService = inject(AuthService);
 
+  private client = createStorefrontApiClient({
+    storeDomain: environment.shopifyDomain,
+    apiVersion: environment.apiVersion || '2026-01',
+    publicAccessToken: environment.shopifyToken,
+  });
+
   activeTab = signal<TabType>('overview');
+  isLoadingOrders = signal<boolean>(false);
+  orders = signal<CustomerOrder[]>([]);
 
-  userName = computed(() => this.authService.currentUser()?.name || 'Valued Customer');
-  userEmail = computed(() => this.authService.currentUser()?.email || 'customer@keyanna.com');
-  userInitials = computed(() => this.authService.currentUser()?.initials || 'VC');
+  userName = computed(() =>
+    this.authService.isLoggedIn()
+      ? this.authService.currentUser()?.name || 'Valued Customer'
+      : 'Guest Visitor',
+  );
 
-  orders = signal([
-    {
-      id: 'gid://shopify/Order/1001',
-      orderNumber: '#KA-1094',
-      date: 'Sep 02, 2026',
-      fulfillmentStatus: 'Dispatched & Tracked',
-      statusClass:
-        'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60',
-      itemCount: 2,
-      totalAmount: 180.0,
-    },
-    {
-      id: 'gid://shopify/Order/1000',
-      orderNumber: '#KA-1042',
-      date: 'Aug 14, 2026',
-      fulfillmentStatus: 'Delivered',
-      statusClass:
-        'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60',
-      itemCount: 1,
-      totalAmount: 65.0,
-    },
-  ]);
+  userEmail = computed(() =>
+    this.authService.isLoggedIn()
+      ? this.authService.currentUser()?.email || ''
+      : 'Sign in with Google to sync sessions',
+  );
+
+  userInitials = computed(() =>
+    this.authService.isLoggedIn() ? this.authService.currentUser()?.initials || 'VC' : 'GV',
+  );
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       const tab = params['tab'] as TabType;
-      if (tab && ['overview', 'cart', 'orders', 'wishlist', 'privacy'].includes(tab)) {
-        this.activeTab.set(tab);
-      } else {
-        this.activeTab.set('overview');
-      }
+      this.activeTab.set(
+        tab && ['overview', 'orders', 'wishlist', 'privacy'].includes(tab) ? tab : 'overview',
+      );
     });
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.syncRealShopifyOrders();
+    }
+  }
+
+  /**
+   * Queries real Shopify Storefront API orders using active customer session or email
+   */
+  async syncRealShopifyOrders(): Promise<void> {
+    const token = isPlatformBrowser(this.platformId)
+      ? localStorage.getItem('shopify_customer_token')
+      : null;
+
+    if (!token && !this.authService.isLoggedIn()) return;
+
+    this.isLoadingOrders.set(true);
+
+    try {
+      if (token) {
+        await this.fetchOrdersByCustomerToken(token);
+      } else {
+        // Fallback session lookup for active Google authenticated profile
+        const email = this.authService.currentUser()?.email;
+        if (email) {
+          await this.fetchOrdersByCustomerEmail(email);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to sync live Shopify orders:', err);
+    } finally {
+      this.isLoadingOrders.set(false);
+    }
+  }
+
+  private async fetchOrdersByCustomerToken(customerAccessToken: string): Promise<void> {
+    const query = `
+      query getCustomerOrders($customerAccessToken: String!) {
+        customer(customerAccessToken: $customerAccessToken) {
+          orders(first: 20, sortKey: PROCESSED_AT, reverse: true) {
+            edges {
+              node {
+                id
+                name
+                orderNumber
+                processedAt
+                fulfillmentStatus
+                financialStatus
+                totalPrice {
+                  amount
+                  currencyCode
+                }
+                lineItems(first: 5) {
+                  edges {
+                    node {
+                      title
+                      quantity
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const { data, errors }: any = await this.client.request(query, {
+      variables: { customerAccessToken },
+    });
+
+    if (errors || !data?.customer?.orders?.edges) {
+      return;
+    }
+
+    const realMappedOrders: CustomerOrder[] = data.customer.orders.edges.map((edge: any) => {
+      const node = edge.node;
+      const items = (node.lineItems?.edges || []).map((e: any) => e.node.title);
+      const itemsSummary = items.length > 0 ? items.join(', ') : 'Hardware Purchase';
+      const itemCount = (node.lineItems?.edges || []).reduce(
+        (sum: number, e: any) => sum + (e.node.quantity || 1),
+        0,
+      );
+
+      let fulfillmentStatus: CustomerOrder['fulfillmentStatus'] = 'Processing';
+      let statusClass =
+        'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60';
+
+      if (node.fulfillmentStatus === 'FULFILLED') {
+        fulfillmentStatus = 'Delivered';
+        statusClass =
+          'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60';
+      } else if (node.fulfillmentStatus === 'IN_TRANSIT') {
+        fulfillmentStatus = 'In Transit';
+        statusClass =
+          'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60';
+      } else if (node.fulfillmentStatus === 'PARTIALLY_FULFILLED') {
+        fulfillmentStatus = 'Dispatched & Tracked';
+        statusClass =
+          'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60';
+      }
+
+      return {
+        id: node.id,
+        orderNumber: node.name || `#KA-${node.orderNumber}`,
+        date: new Date(node.processedAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        fulfillmentStatus,
+        statusClass,
+        itemCount,
+        totalAmount: parseFloat(node.totalPrice?.amount || '0'),
+        currencyCode: node.totalPrice?.currencyCode || 'USD',
+        itemsSummary,
+      };
+    });
+
+    this.orders.set(realMappedOrders);
+  }
+
+  private async fetchOrdersByCustomerEmail(email: string): Promise<void> {
+    // If token is absent, orders remain empty until full Customer Token exchange is finalized
+    this.orders.set([]);
   }
 }

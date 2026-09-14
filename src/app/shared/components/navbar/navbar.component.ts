@@ -7,6 +7,7 @@ import { CartService } from '../../../core/services/cart';
 import { ThemeService } from '../../../core/services/theme';
 import { LanguageService } from '../../../core/services/language';
 import { CurrencyService } from '../../../core/services/currency';
+import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-navbar',
@@ -22,7 +23,6 @@ import { CurrencyService } from '../../../core/services/currency';
       >
         <div class="max-w-7xl mx-auto flex justify-between items-center">
           <p class="hidden sm:flex items-center gap-2 font-medium tracking-tight">
-            <!-- <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> -->
             ⚡ Express global shipping on all verified orders over
             {{ currencyService.formatPrice({ amount: 50, currencyCode: 'USD' }) }}
           </p>
@@ -157,7 +157,7 @@ import { CurrencyService } from '../../../core/services/currency';
           >Nna
         </a>
 
-        <!-- Search Bar (Desktop - SEO & Adsense Optimized Input) -->
+        <!-- Search Bar (Desktop) -->
         <div class="hidden md:flex flex-1 max-w-lg relative">
           <input
             type="search"
@@ -185,56 +185,97 @@ import { CurrencyService } from '../../../core/services/currency';
           </button>
         </div>
 
-        <!-- Action Items: Wishlist, Account, Cart Trigger & Mobile Toggle -->
+        <!-- Action Items: Wishlist, Dynamic Account Profile, Cart Trigger & Mobile Toggle -->
         <div class="flex items-center gap-1 sm:gap-2">
-          <!-- CUSTOMER ACCOUNT DROPDOWN MENU -->
+          <!-- REACTIVE CUSTOMER ACCOUNT DROPDOWN MENU -->
           <div class="relative">
             <button
               (click)="toggleDropdown('account')"
               [attr.aria-expanded]="isAccountOpen()"
               aria-label="User Profile & Order Account Menu"
-              class="p-2.5 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all duration-200 cursor-pointer flex items-center group"
-              title="Customer Account"
+              class="p-1 rounded-full transition-all duration-200 cursor-pointer flex items-center group"
+              [title]="
+                authService.isLoggedIn()
+                  ? 'Logged in as ' + (authService.currentUser()?.name || 'Customer')
+                  : 'Customer Account'
+              "
             >
-              <svg
-                class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+              @if (authService.isLoggedIn() && authService.currentUser()) {
+                <!-- Google Avatar Picture or Initials Badge -->
+                <div class="relative flex items-center justify-center">
+                  @if (authService.currentUser()?.picture) {
+                    <img
+                      [src]="authService.currentUser()?.picture"
+                      [alt]="authService.currentUser()?.name || 'User Avatar'"
+                      class="w-8 h-8 rounded-full object-cover border-2 border-blue-600/40 group-hover:border-blue-600 transition-colors"
+                    />
+                  } @else {
+                    <div
+                      class="w-8 h-8 rounded-full bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 font-black text-xs flex items-center justify-center"
+                    >
+                      {{ authService.currentUser()?.initials || 'VC' }}
+                    </div>
+                  }
+                  <span
+                    class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"
+                    title="Active Session"
+                  ></span>
+                </div>
+              } @else {
+                <!-- Guest Visitor Icon -->
+                <div
+                  class="p-2 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all"
+                >
+                  <svg
+                    class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+              }
             </button>
 
             @if (isAccountOpen()) {
               <div
                 (mouseleave)="isAccountOpen.set(false)"
-                class="absolute right-0 mt-2 w-54 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn"
+                class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn rounded-2xl"
               >
-                <!-- Greeting Header -->
+                <!-- Dynamic Greeting Header -->
                 <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
                   <p
-                    class="text-[13px] font-bold uppercase text-blue-600 dark:text-blue-400 tracking-wider"
+                    class="text-[11px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider"
                   >
-                    Account Central
+                    {{ authService.isLoggedIn() ? 'Verified Customer' : 'Account Central' }}
                   </p>
-                  <p class="text-[15px] font-bold text-slate-900 dark:text-white truncate">
-                    My Customer Dashboard
+                  <p class="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    {{
+                      authService.isLoggedIn()
+                        ? authService.currentUser()?.name || 'Customer Dashboard'
+                        : 'Guest Visitor'
+                    }}
                   </p>
+                  @if (authService.isLoggedIn() && authService.currentUser()?.email) {
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                      {{ authService.currentUser()?.email }}
+                    </p>
+                  }
                 </div>
 
-                <!-- Action Options with Tab Query Parameters -->
+                <!-- Action Options -->
                 <div class="py-1">
                   <a
                     routerLink="/account"
                     [queryParams]="{ tab: 'overview' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
                     <svg
                       class="w-4 h-4 text-slate-400"
@@ -256,7 +297,7 @@ import { CurrencyService } from '../../../core/services/currency';
                     routerLink="/account"
                     [queryParams]="{ tab: 'orders' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
                     <svg
                       class="w-4 h-4 text-slate-400"
@@ -278,7 +319,7 @@ import { CurrencyService } from '../../../core/services/currency';
                     routerLink="/account"
                     [queryParams]="{ tab: 'wishlist' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
                     <svg
                       class="w-4 h-4 text-slate-400"
@@ -297,22 +338,29 @@ import { CurrencyService } from '../../../core/services/currency';
                   </a>
                 </div>
 
-                <!-- Authentication CTA -->
-                <div class="py-1.5 px-4 bg-slate-50/30 dark:bg-slate-800/30 rounded-b-2xl">
-                  <a
-                    routerLink="/account"
-                    [queryParams]="{ tab: 'overview' }"
-                    (click)="isAccountOpen.set(false)"
-                    class="text-[13px] font-extrabold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
-                  >
-                    Sign In or Register →
-                  </a>
+                <!-- Dynamic Auth CTA -->
+                <div class="py-2 px-4 bg-slate-50/30 dark:bg-slate-800/30 rounded-b-2xl">
+                  @if (authService.isLoggedIn()) {
+                    <button
+                      (click)="authService.logout(); isAccountOpen.set(false)"
+                      class="w-full text-left text-xs font-bold text-red-600 dark:text-red-400 hover:underline cursor-pointer py-1"
+                    >
+                      Sign Out
+                    </button>
+                  } @else {
+                    <button
+                      (click)="authService.loginWithGoogle(); isAccountOpen.set(false)"
+                      class="text-xs font-extrabold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    >
+                      Sign In with Google →
+                    </button>
+                  }
                 </div>
               </div>
             }
           </div>
 
-          <!-- Slide-Over Shopping Cart Drawer Trigger -->
+          <!-- Shopping Cart Drawer Trigger -->
           <button
             (click)="cartService.openDrawer(); closeAllDropdowns()"
             class="relative p-2.5 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all duration-200 cursor-pointer group"
@@ -334,7 +382,7 @@ import { CurrencyService } from '../../../core/services/currency';
             </svg>
             @if (cartService.itemCount() > 0) {
               <span
-                class="absolute top-0.5 right-0.5 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm animate-pulse"
+                class="absolute top-0.5 right-0.5 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs animate-pulse"
               >
                 {{ cartService.itemCount() }}
               </span>
@@ -360,13 +408,13 @@ import { CurrencyService } from '../../../core/services/currency';
         </div>
       </div>
 
-      <!-- 3. Lower Menu Bar (Desktop Navigation with Both Mega Menu & Categories Dropdown) -->
+      <!-- 3. Lower Menu Bar -->
       <nav
         class="hidden md:block bg-slate-50/80 dark:bg-slate-900/60 border-t border-slate-200/60 dark:border-slate-800 text-sm font-medium"
         aria-label="Primary Catalog Navigation"
       >
         <div class="max-w-7xl mx-auto px-4 lg:px-8 flex items-center gap-8 h-11">
-          <!-- MEGA MENU DROPDOWN ("Shop Catalog") -->
+          <!-- MEGA MENU DROPDOWN -->
           <div class="relative" (mouseleave)="isMegaOpen.set(false)">
             <button
               (mouseenter)="isMegaOpen.set(true); isCatOpen.set(false)"
@@ -408,7 +456,6 @@ import { CurrencyService } from '../../../core/services/currency';
               <div
                 class="absolute left-0 top-11 w-170 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl p-6 grid grid-cols-3 gap-6 z-50 animate-fadeIn"
               >
-                <!-- Mega Column 1 -->
                 <div>
                   <h4
                     class="font-bold text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3"
@@ -449,7 +496,6 @@ import { CurrencyService } from '../../../core/services/currency';
                   </ul>
                 </div>
 
-                <!-- Mega Column 2 -->
                 <div>
                   <h4
                     class="font-bold text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3"
@@ -490,7 +536,6 @@ import { CurrencyService } from '../../../core/services/currency';
                   </ul>
                 </div>
 
-                <!-- Mega Column 3 (Promo Feature Banner) -->
                 <div
                   class="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-700/30 p-4 flex flex-col justify-between border border-blue-100 dark:border-slate-600/50"
                 >
@@ -519,7 +564,7 @@ import { CurrencyService } from '../../../core/services/currency';
             }
           </div>
 
-          <!-- COMPACT CATEGORIES DROPDOWN MENU (Preserved) -->
+          <!-- COMPACT CATEGORIES DROPDOWN MENU -->
           <div class="relative" (mouseleave)="isCatOpen.set(false)">
             <button
               (mouseenter)="isCatOpen.set(true); isMegaOpen.set(false)"
@@ -576,7 +621,7 @@ import { CurrencyService } from '../../../core/services/currency';
             }
           </div>
 
-          <!-- Standard Primary Nav Direct Links -->
+          <!-- Primary Nav Direct Links -->
           <a
             routerLink="/products"
             routerLinkActive="text-blue-600 dark:text-blue-400 font-bold"
@@ -584,13 +629,6 @@ import { CurrencyService } from '../../../core/services/currency';
           >
             All Products
           </a>
-          <!-- <a
-            routerLink="/best-sellers"
-            routerLinkActive="text-blue-600 dark:text-blue-400 font-bold"
-            class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
-          >
-            Best Sellers
-          </a> -->
           <a
             routerLink="/new-arrivals"
             routerLinkActive="text-blue-600 dark:text-blue-400 font-bold"
@@ -637,11 +675,24 @@ import { CurrencyService } from '../../../core/services/currency';
           <div
             class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl space-y-2 border border-slate-200/60 dark:border-slate-700/60"
           >
-            <p
-              class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-1"
-            >
-              Customer Central
-            </p>
+            <div class="flex items-center justify-between px-1">
+              <p
+                class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider"
+              >
+                {{
+                  authService.isLoggedIn()
+                    ? authService.currentUser()?.name || 'Customer Profile'
+                    : 'Customer Central'
+                }}
+              </p>
+              @if (authService.isLoggedIn()) {
+                <span
+                  class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60"
+                >
+                  Online
+                </span>
+              }
+            </div>
             <div class="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
               <a
                 routerLink="/account"
@@ -685,12 +736,6 @@ import { CurrencyService } from '../../../core/services/currency';
               >Shop Full Catalog</a
             >
             <a
-              routerLink="/best-sellers"
-              (click)="isMobileOpen.set(false)"
-              class="py-2 border-b border-slate-100 dark:border-slate-800"
-              >Best Sellers</a
-            >
-            <a
               routerLink="/new-arrivals"
               (click)="isMobileOpen.set(false)"
               class="py-2 border-b border-slate-100 dark:border-slate-800"
@@ -715,6 +760,7 @@ export class Navbar {
   public themeService = inject(ThemeService);
   public languageService: LanguageService = inject(LanguageService);
   public currencyService = inject(CurrencyService);
+  public authService = inject(AuthService);
 
   isMobileOpen = signal<boolean>(false);
   isMegaOpen = signal<boolean>(false);
