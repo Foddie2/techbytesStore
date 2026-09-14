@@ -1,8 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  inject,
+  signal,
+  effect,
+  OnDestroy,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+// Core Services
 import { CartService } from '../../../core/services/cart';
 import { CurrencyService } from '../../../core/services/currency';
+import { AiChatbotService } from '../../../core/services/ai-chatbot';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -30,7 +40,7 @@ import { CurrencyService } from '../../../core/services/currency';
                 @if (step() === 'shipping') {
                   <button
                     (click)="step.set('cart')"
-                    class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                   >
                     ←
                   </button>
@@ -300,11 +310,14 @@ import { CurrencyService } from '../../../core/services/currency';
     }
   `,
 })
-export class CartDrawerComponent {
+export class CartDrawerComponent implements OnDestroy {
+  private platformId = inject(PLATFORM_ID);
   public cartService = inject(CartService);
   public currencyService = inject(CurrencyService);
+  public aiChatbotService = inject(AiChatbotService);
 
   step = signal<'cart' | 'shipping'>('cart');
+  private abandonmentTimer: any = null;
 
   shippingForm = {
     email: '',
@@ -314,6 +327,66 @@ export class CartDrawerComponent {
     city: '',
     zip: '',
   };
+
+  constructor() {
+    // Angular effect reactively watches cart drawer visibility & item count
+    effect(() => {
+      const isOpen = this.cartService.isOpen();
+      const count = this.cartService.itemCount();
+
+      if (isOpen && count > 0) {
+        this.checkAbandonmentIntent();
+      } else {
+        this.clearAbandonmentWatch();
+      }
+    });
+  }
+
+  private get isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
+
+  /**
+   * Proactive Cart Abandonment Trigger
+   * Combines a 20-second inactivity timer with a browser mouse exit-intent listener.
+   */
+  private checkAbandonmentIntent(): void {
+    if (!this.isBrowser) return;
+
+    this.clearAbandonmentWatch();
+
+    // 1. Inactivity Timer (Triggers after 20 seconds of idle browsing in open cart)
+    this.abandonmentTimer = setTimeout(() => {
+      if (this.cartService.isOpen() && this.cartService.itemCount() > 0) {
+        const count = this.cartService.itemCount();
+        this.aiChatbotService.triggerProactiveNudge(
+          `Hey! I noticed you have ${count} item${count > 1 ? 's' : ''} saved in your cart. Need any help setting up instant M-Pesa express checkout or checking delivery timelines?`
+        );
+      }
+    }, 20000);
+
+    // 2. Mouse Exit-Intent Listener (Triggers when cursor moves to leave the top of the browser window)
+    window.addEventListener('mouseleave', this.onMouseLeaveExitIntent);
+  }
+
+  private onMouseLeaveExitIntent = (e: MouseEvent): void => {
+    if (e.clientY <= 10 && this.cartService.isOpen() && this.cartService.itemCount() > 0) {
+      this.aiChatbotService.triggerProactiveNudge(
+        `Wait! Before you leave, would an instant 10% discount voucher code help you complete your order today?`
+      );
+      this.clearAbandonmentWatch();
+    }
+  };
+
+  private clearAbandonmentWatch(): void {
+    if (!this.isBrowser) return;
+
+    if (this.abandonmentTimer) {
+      clearTimeout(this.abandonmentTimer);
+      this.abandonmentTimer = null;
+    }
+    window.removeEventListener('mouseleave', this.onMouseLeaveExitIntent);
+  }
 
   formatPrice(priceObj: { amount: string; currencyCode: string } | undefined): string {
     if (!priceObj || !priceObj.amount) return '$0.00';
@@ -325,8 +398,11 @@ export class CartDrawerComponent {
 
   async onNativeCheckoutSubmit(event: Event): Promise<void> {
     event.preventDefault();
-    // Pre-fills customer info on Shopify cart before finalizing checkout
     await this.cartService.updateBuyerIdentity(this.shippingForm);
     this.cartService.proceedToCheckout();
+  }
+
+  ngOnDestroy(): void {
+    this.clearAbandonmentWatch();
   }
 }
