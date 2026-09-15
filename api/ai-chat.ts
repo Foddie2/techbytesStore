@@ -2,100 +2,147 @@ import { GoogleGenAI, Type } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Shopify GraphQL helper for tool execution
-async function searchShopifyProducts(query: string) {
+// Direct Shopify Storefront API catalog resolver
+async function searchShopifyCatalog(query: string) {
   const gql = `
-    query {
-      products(first: 3, query: "${query}") {
+    query searchProducts($query: String!) {
+      products(first: 3, query: $query) {
         edges {
           node {
+            id
             title
-            variants(first: 1) { edges { node { id price { amount currencyCode } } } }
-            images(first: 1) { edges { node { url } } }
+            description
+            variants(first: 1) {
+              edges {
+                node {
+                  id
+                  price { amount currencyCode }
+                }
+              }
+            }
+            images(first: 1) {
+              edges { node { url } }
+            }
           }
         }
       }
     }
   `;
 
-  const res = await fetch(`https://${process.env.SHOPIFY_DOMAIN}/api/2026-01/graphql.json`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Storefront-Access-Token': process.env.SHOPIFY_STOREFRONT_TOKEN!,
-    },
-    body: JSON.stringify({ query: gql }),
-  });
+  try {
+    const res = await fetch(`https://${process.env.SHOPIFY_DOMAIN}/api/2026-01/graphql.json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': process.env.SHOPIFY_STOREFRONT_TOKEN!,
+      },
+      body: JSON.stringify({ query: gql, variables: { query } }),
+    });
 
-  const { data } = await res.json();
-  return (
-    data?.products?.edges.map((e: any) => ({
-      title: e.node.title,
-      variantId: e.node.variants.edges[0]?.node?.id,
-      price: `${e.node.variants.edges[0]?.node?.price.amount} ${e.node.variants.edges[0]?.node?.price.currencyCode}`,
-      imageUrl: e.node.images.edges[0]?.node?.url,
-    })) || []
-  );
+    const { data } = await res.json();
+    return (
+      data?.products?.edges.map((e: any) => ({
+        title: e.node.title,
+        variantId: e.node.variants.edges[0]?.node?.id,
+        price: `${e.node.variants.edges[0]?.node?.price.amount} ${e.node.variants.edges[0]?.node?.price.currencyCode}`,
+        imageUrl: e.node.images.edges[0]?.node?.url,
+      })) || []
+    );
+  } catch (err) {
+    console.error('Shopify tool lookup error:', err);
+    return [];
+  }
 }
 
 export async function POST(req: Request) {
-  const { prompt, userContext } = await req.json();
+  const { prompt, history, userContext = {} } = await req.json();
+  const safeUserContext = userContext || {};
 
-  // Define tools for Gemini
   const searchTool = {
-    name: 'searchProducts',
-    description: 'Search hardware catalog in Shopify store',
+    name: 'searchShopifyCatalog',
+    description: 'Lookup hardware inventory, specs, and live pricing from KeyNna store.',
     parameters: {
       type: Type.OBJECT,
-      properties: { query: { type: Type.STRING } },
+      properties: {
+        query: {
+          type: Type.STRING,
+          description: 'Search keywords e.g. "wireless headphones" or "fast charger"',
+        },
+      },
       required: ['query'],
     },
   };
 
   const systemInstruction = `
-  You are KeyNna's friendly, expert shopping concierge. 
-  
-  User Persona Context:
-  - First Name: ${userContext.firstName || 'there'}
-  - Logged In: ${userContext.isLoggedIn ? 'Yes (Google Authenticated)' : 'No (Guest)'}
-  - Active Cart Count: ${userContext.cartCount} items
+    You are KeyNna's Lead AI Sales & Support Concierge. You sound like an empathetic, highly knowledgeable senior store specialist.
 
-  Personality Rules:
-  1. Talk like a knowledgeable, helpful peer in a tech store—warm, concise, and direct.
-  2. If the user's first name is known, address them naturally (e.g., "Hey John!"), but don't overuse it.
-  3. Keep prose replies under 2-3 short sentences. Avoid rigid robotic lists unless comparing multiple products.
-  4. Use subtle, conversational transitions (e.g., "Got it," "No worries at all," "Let me check that for you").
-  5. When users ask about M-Pesa or delivery, reassure them empathetically about speed and security.
-`;
+    CURRENT USER CONTEXT:
+    - Customer Name: ${safeUserContext.userName || 'Guest Visitor'}
+    - Customer Email: ${safeUserContext.userEmail || 'Not Provided'}
+    - Is Authenticated: ${safeUserContext.isLoggedIn ? 'Yes (Google Verified)' : 'No'}
+    - Active Cart Items: ${safeUserContext.cartCount ?? 0} item(s)
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
-    contents: prompt,
-    config: {
-      systemInstruction,
-      tools: [{ functionDeclarations: [searchTool] }],
-    },
-  });
+    STORE DOMAIN KNOWLEDGE:
+    - Payments: Supports M-Pesa Express STK Push, Visa, Mastercard, and Cash on Delivery (COD).
+    - Shipping: Express dispatch within 24 hours. Orders over $50 quality for free global delivery.
+    - Tracking: Customers can track order dispatches at /track-order using their Order Number (#KA-XXXX) and email.
 
-  // Handle tool calls
-  const functionCalls = response.functionCalls ?? [];
-  if (functionCalls.length > 0) {
-    const call = functionCalls[0];
-    if (call.name === 'searchProducts') {
-      const args = call.args as { query: string };
-      const products = await searchShopifyProducts(args.query);
+    TONE & BEHAVIORAL RULES:
+    1. Respond naturally, warmth, and brevity (2 to 3 concise sentences max).
+    2. Address the customer by their first name naturally if signed in.
+    3. Never make up fake specs. Call 'searchShopifyCatalog' whenever a product, category, or recommendation is requested.
+    4. If the user expresses hesitation around payment or checkout, explain M-Pesa STK push security clearly and offer an instant 10% voucher code "KEYNNA10".
+  `;
 
-      return new Response(
-        JSON.stringify({
-          text: `Here are the top matches for "${args.query}" from our inventory:`,
-          products,
-        }),
-        { headers: { 'Content-Type': 'application/json' } },
-      );
+  try {
+    // Format conversation history for Gemini multi-turn chat
+    const formattedHistory = (history || []).map((msg: any) => ({
+      role: msg.sender === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.text }],
+    }));
+
+    const chat = ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: [...formattedHistory, { role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction,
+        tools: [{ functionDeclarations: [searchTool] }],
+        temperature: 0.7,
+      },
+    });
+
+    const response = await chat;
+    const functionCalls = response.functionCalls ?? [];
+
+    if (functionCalls.length > 0) {
+      const call = functionCalls[0] as { name?: string; args?: { query?: string } };
+      if (call.name === 'searchShopifyCatalog') {
+        const args = call.args || {};
+        const products = await searchShopifyCatalog(args.query || '');
+
+        return new Response(
+          JSON.stringify({
+            text:
+              products.length > 0
+                ? `I found these verified hardware items matching "${args.query}" for you:`
+                : `I searched our inventory for "${args.query}", but couldn't find an exact match right now. Could I help you look for alternative tech accessories?`,
+            products,
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        );
+      }
     }
-  }
 
-  return new Response(JSON.stringify({ text: response.text }), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+    return new Response(JSON.stringify({ text: response.text || 'I can help with product questions, cart updates, or payment setup.' }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err: any) {
+    console.error('Gemini Execution Error:', err);
+    return new Response(
+      JSON.stringify({
+        text: 'I am experiencing a quick connection update. How else can I assist with your cart or M-Pesa payment setup?',
+      }),
+      { headers: { 'Content-Type': 'application/json' } },
+    );
+  }
 }
