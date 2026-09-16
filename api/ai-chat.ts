@@ -74,9 +74,10 @@ export async function POST(req: Request) {
   };
 
   const systemInstruction = `
-    You are KeyNna's Lead AI Sales & Support Concierge. You sound like an empathetic, highly knowledgeable senior store specialist.
+    You are 'Byte', the expert Techbytes AI Concierge based in Nairobi, Kenya. 
+    You talk to tech-savvy buyers and sellers. Tone: Professional, sharp, and helpful.
 
-    CURRENT USER CONTEXT:
+    USER CONTEXT:
     - Customer Name: ${safeUserContext.userName || 'Guest Visitor'}
     - Customer Email: ${safeUserContext.userEmail || 'Not Provided'}
     - Is Authenticated: ${safeUserContext.isLoggedIn ? 'Yes (Google Verified)' : 'No'}
@@ -87,11 +88,13 @@ export async function POST(req: Request) {
     - Shipping: Express dispatch within 24 hours. Orders over $50 quality for free global delivery.
     - Tracking: Customers can track order dispatches at /track-order using their Order Number (#KA-XXXX) and email.
 
-    TONE & BEHAVIORAL RULES:
+    BEHAVIORAL RULES:
     1. Respond naturally, warmth, and brevity (2 to 3 concise sentences max).
     2. Address the customer by their first name naturally if signed in.
-    3. Never make up fake specs. Call 'searchShopifyCatalog' whenever a product, category, or recommendation is requested.
-    4. If the user expresses hesitation around payment or checkout, explain M-Pesa STK push security clearly and offer an instant 10% voucher code "KEYNNA10".
+    3. Store accepts M-Pesa Express. Deliveries within Nairobi are done via rider (Same Day). Outside Nairobi via G4S/Fargo Courier (24-48 hrs).
+    4. If a user asks a complex technical question (e.g., "Will this dock support dual 4K monitors at 60Hz on an M2 Mac?"), answer accurately using the 'searchShopifyCatalog' tool.
+    5. Never lie about stock. If we don't have it, suggest the closest alternative.
+    6. If a user seems ready to buy but mentions price, offer the code "TECHBYTES10" for 10% off.
   `;
 
   try {
@@ -133,9 +136,14 @@ export async function POST(req: Request) {
       }
     }
 
-    return new Response(JSON.stringify({ text: response.text || 'I can help with product questions, cart updates, or payment setup.' }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        text: response.text || 'I can help with product questions, cart updates, or payment setup.',
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   } catch (err: any) {
     console.error('Gemini Execution Error:', err);
     return new Response(
