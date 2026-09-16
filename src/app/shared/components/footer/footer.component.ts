@@ -16,8 +16,13 @@ import { RouterLink } from '@angular/router';
           class="max-w-7xl mx-auto px-4 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6"
         >
           <div class="space-y-1 text-center md:text-left">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-              Subscribe to Tech Alerts
+            <h3
+              class="text-xl font-bold text-slate-900 dark:text-white flex items-center justify-center md:justify-start gap-2"
+            >
+              <span class="material-symbols-outlined text-blue-600 dark:text-blue-400"
+                >mark_email_unread</span
+              >
+              <span>Subscribe to Tech Alerts</span>
             </h3>
             <p class="text-sm text-slate-500 dark:text-slate-400">
               Get early notification on inventory drops, tech guides, and exclusive discount codes.
@@ -35,16 +40,18 @@ import { RouterLink } from '@angular/router';
                 />
                 <button
                   type="submit"
-                  class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition cursor-pointer"
+                  class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition cursor-pointer flex items-center gap-1.5 shrink-0"
                 >
-                  Subscribe
+                  <span>Subscribe</span>
+                  <span class="material-symbols-outlined text-[18px]">send</span>
                 </button>
               </form>
             } @else {
               <div
                 class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-sm font-bold px-4 py-2.5 rounded-xl flex items-center gap-2"
               >
-                ✓ Thank you for subscribing!
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                <span>Thank you for subscribing!</span>
               </div>
             }
           </div>
@@ -57,9 +64,10 @@ import { RouterLink } from '@angular/router';
           <div class="lg:col-span-2 space-y-4">
             <a
               routerLink="/"
-              class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-1"
+              class="rubik-glitch-regular text-3xl text-slate-900 dark:text-white tracking-wide flex items-center gap-1 group transition-transform duration-200 active:scale-95"
+              aria-label="DigiTex E-Commerce Home"
             >
-              <span class="text-blue-600 dark:text-blue-500">Tech</span>Bytes
+              <span class="text-blue-600 dark:text-blue-500">Digi</span>Tex
             </a>
             <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
               Your destination for high-performance electronics and verified accessories. Synced
@@ -113,14 +121,16 @@ import { RouterLink } from '@angular/router';
 
             <div class="flex flex-wrap items-center gap-2 pt-2">
               <span
-                class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
               >
-                🛡️ 256-Bit SSL Encrypted
+                <span class="material-symbols-outlined text-[16px]">lock</span>
+                <span>256-Bit SSL Encrypted</span>
               </span>
               <span
-                class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
               >
-                🚚 Tracked Express Shipping
+                <span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                <span>Tracked Express Shipping</span>
               </span>
             </div>
           </div>
@@ -175,9 +185,11 @@ import { RouterLink } from '@angular/router';
               <li>
                 <a
                   routerLink="/track-order"
-                  class="hover:text-blue-600 dark:hover:text-white transition font-semibold text-blue-600 dark:text-blue-400"
-                  >Track Order</a
+                  class="hover:text-blue-600 dark:hover:text-white transition font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1"
                 >
+                  <span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                  <span>Track Order</span>
+                </a>
               </li>
               <li>
                 <a routerLink="/#faq" class="hover:text-blue-600 dark:hover:text-white transition"
@@ -234,9 +246,7 @@ import { RouterLink } from '@angular/router';
         <div
           class="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400"
         >
-          <p>
-            © {{ currentYear }} TechBytes Store. All rights reserved. Headless Shopify Integration.
-          </p>
+          <p>© {{ currentYear }} DigiTex. All rights reserved. Headless Shopify Integration.</p>
 
           <div
             class="flex flex-wrap items-center gap-2 font-mono text-slate-600 dark:text-slate-400"
@@ -256,11 +266,29 @@ import { RouterLink } from '@angular/router';
             <span class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded text-[10px] font-bold"
               >APPLE PAY</span
             >
+            <span
+              class="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded text-[10px] font-bold border border-emerald-500/20"
+              >M-PESA</span
+            >
           </div>
         </div>
       </div>
     </footer>
   `,
+  styles: [
+    `
+      .rubik-glitch-regular {
+        font-family: 'Rubik Glitch', system-ui;
+        font-weight: 400;
+        font-style: normal;
+      }
+      .press-start-2p-regular {
+        font-family: 'Press Start 2P', system-ui;
+        font-weight: 400;
+        font-style: normal;
+      }
+    `,
+  ],
 })
 export class FooterComponent {
   currentYear: number = new Date().getFullYear();

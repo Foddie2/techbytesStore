@@ -34,20 +34,7 @@ import { AuthService } from '../../../core/services/auth';
               class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center gap-1.5 py-0.5"
               title="Track live shipment status"
             >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"
-                />
-              </svg>
+              <span class="material-symbols-outlined text-[16px]">local_shipping</span>
               <span>Track Order</span>
             </a>
 
@@ -62,20 +49,11 @@ import { AuthService } from '../../../core/services/auth';
                 class="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 font-medium cursor-pointer py-0.5"
               >
                 <span>🌐 {{ languageService.selectedLang() }}</span>
-                <svg
-                  class="w-3 h-3 transition-transform duration-200"
+                <span
+                  class="material-symbols-outlined text-[16px] transition-transform duration-200"
                   [class.rotate-180]="isLangOpen()"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  >expand_more</span
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
               </button>
 
               @if (isLangOpen()) {
@@ -110,32 +88,16 @@ import { AuthService } from '../../../core/services/auth';
             <!-- Dark Mode Switcher -->
             <button
               (click)="themeService.toggleDarkMode()"
-              class="p-1 rounded-md hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-colors duration-200 cursor-pointer"
+              class="p-1 rounded-md hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-colors duration-200 cursor-pointer flex items-center justify-center"
               [attr.aria-label]="
                 themeService.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'
               "
               title="Toggle Theme"
             >
               @if (themeService.isDarkMode()) {
-                <svg
-                  class="w-4 h-4 text-amber-400 transform hover:rotate-45 transition-transform duration-300"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <span class="material-symbols-outlined text-[15px] text-amber-400">light_mode</span>
               } @else {
-                <svg
-                  class="w-4 h-4 text-slate-600 transform hover:-rotate-12 transition-transform duration-300"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
+                <span class="material-symbols-outlined text-[15px] text-slate-600">dark_mode</span>
               }
             </button>
           </div>
@@ -146,15 +108,15 @@ import { AuthService } from '../../../core/services/auth';
       <div
         class="max-w-7xl mx-auto px-4 lg:px-8 py-3.5 flex items-center justify-between gap-4 sm:gap-8"
       >
-        <!-- Brand Logo -->
+        <!-- Brand Logo (Rubik Glitch Font) -->
         <a
           routerLink="/"
-          class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1 group transition-transform duration-200 active:scale-95"
-          aria-label="KeyNna E-Commerce Home"
+          class="rubik-glitch-regular text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-wide flex items-center gap-1 group transition-transform duration-200 active:scale-95"
+          aria-label="DigiTex E-Commerce Home"
         >
           <span class="text-blue-600 dark:text-blue-500 group-hover:text-blue-500 transition-colors"
-            >Key</span
-          >Nna
+            >Digi</span
+          >Tex
         </a>
 
         <!-- Search Bar (Desktop) -->
@@ -171,17 +133,10 @@ import { AuthService } from '../../../core/services/auth';
           <button
             (click)="onSearch()"
             aria-label="Submit Search"
-            class="absolute right-1.5 top-1.5 p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-full cursor-pointer transition-colors duration-200"
+            class="absolute right-1.5 top-1.5 p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-full cursor-pointer transition-colors duration-200 flex items-center justify-center"
             title="Execute Search"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <span class="material-symbols-outlined text-[20px]">search</span>
           </button>
         </div>
 
@@ -201,12 +156,12 @@ import { AuthService } from '../../../core/services/auth';
               "
             >
               @if (authService.isLoggedIn() && authService.currentUser()) {
-                <!-- Google Avatar Picture or Initials Badge -->
                 <div class="relative flex items-center justify-center">
                   @if (authService.currentUser()?.picture) {
                     <img
                       [src]="authService.currentUser()?.picture"
                       [alt]="authService.currentUser()?.name || 'User Avatar'"
+                      referrerpolicy="no-referrer"
                       class="w-8 h-8 rounded-full object-cover border-2 border-blue-600/40 group-hover:border-blue-600 transition-colors"
                     />
                   } @else {
@@ -222,23 +177,10 @@ import { AuthService } from '../../../core/services/auth';
                   ></span>
                 </div>
               } @else {
-                <!-- Guest Visitor Icon -->
                 <div
-                  class="p-2 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all"
+                  class="p-2 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all flex items-center justify-center"
                 >
-                  <svg
-                    class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
+                  <span class="material-symbols-outlined text-[24px]">account_circle</span>
                 </div>
               }
             </button>
@@ -246,14 +188,14 @@ import { AuthService } from '../../../core/services/auth';
             @if (isAccountOpen()) {
               <div
                 (mouseleave)="isAccountOpen.set(false)"
-                class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn rounded-2xl"
+                class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 shadow-2xl py-2 z-50 divide-y divide-slate-100 dark:divide-slate-700/60 animate-fadeIn "
               >
                 <!-- Dynamic Greeting Header -->
                 <div class="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-t-2xl">
                   <p
                     class="text-[11px] font-extrabold uppercase text-blue-600 dark:text-blue-400 tracking-wider"
                   >
-                    {{ authService.isLoggedIn() ? 'Verified Customer' : 'Account Central' }}
+                    {{ authService.isLoggedIn() ? 'Verified Customer' : 'Account profile' }}
                   </p>
                   <p class="text-xs font-bold text-slate-900 dark:text-white truncate">
                     {{
@@ -277,19 +219,9 @@ import { AuthService } from '../../../core/services/auth';
                     (click)="isAccountOpen.set(false)"
                     class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
-                    <svg
-                      class="w-4 h-4 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <span class="material-symbols-outlined text-[20px] text-slate-400"
+                      >dashboard</span
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
                     <span>My Account</span>
                   </a>
 
@@ -299,19 +231,9 @@ import { AuthService } from '../../../core/services/auth';
                     (click)="isAccountOpen.set(false)"
                     class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
-                    <svg
-                      class="w-4 h-4 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <span class="material-symbols-outlined text-[20px] text-slate-400"
+                      >local_shipping</span
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                      />
-                    </svg>
                     <span>Orders Placed</span>
                   </a>
 
@@ -321,19 +243,9 @@ import { AuthService } from '../../../core/services/auth';
                     (click)="isAccountOpen.set(false)"
                     class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
                   >
-                    <svg
-                      class="w-4 h-4 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <span class="material-symbols-outlined text-[20px] text-slate-400"
+                      >favorite</span
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
                     <span>Wishlist</span>
                   </a>
                 </div>
@@ -363,23 +275,14 @@ import { AuthService } from '../../../core/services/auth';
           <!-- Shopping Cart Drawer Trigger -->
           <button
             (click)="cartService.openDrawer(); closeAllDropdowns()"
-            class="relative p-2.5 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all duration-200 cursor-pointer group"
+            class="relative p-2.5 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-full transition-all duration-200 cursor-pointer group flex items-center justify-center"
             title="Shopping Cart Drawer"
             aria-label="Open Shopping Cart Drawer"
           >
-            <svg
-              class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <span
+              class="material-symbols-outlined text-[24px] transition-transform duration-200 group-hover:scale-110"
+              >shopping_cart</span
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
             @if (cartService.itemCount() > 0) {
               <span
                 class="absolute top-0.5 right-0.5 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs animate-pulse"
@@ -392,18 +295,11 @@ import { AuthService } from '../../../core/services/auth';
           <!-- Mobile Hamburger Menu Button -->
           <button
             (click)="isMobileOpen.set(!isMobileOpen())"
-            class="md:hidden p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 cursor-pointer rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            class="md:hidden p-2 text-slate-700 dark:text-slate-200 hover:text-blue-600 cursor-pointer rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
             aria-label="Toggle Mobile Menu Navigation"
             [attr.aria-expanded]="isMobileOpen()"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <span class="material-symbols-outlined text-[24px]">menu</span>
           </button>
         </div>
       </div>
@@ -422,34 +318,15 @@ import { AuthService } from '../../../core/services/auth';
               [attr.aria-expanded]="isMegaOpen()"
               class="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 h-11 cursor-pointer transition-colors duration-150"
             >
-              <svg
-                class="w-4 h-4 text-blue-600 dark:text-blue-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <span class="material-symbols-outlined text-[18px] text-blue-600 dark:text-blue-500"
+                >grid_view</span
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h7"
-                />
-              </svg>
               <span>Shop Catalog</span>
-              <svg
-                class="w-3.5 h-3.5 transition-transform duration-200"
+              <span
+                class="material-symbols-outlined text-[16px] transition-transform duration-200"
                 [class.rotate-180]="isMegaOpen()"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                >expand_more</span
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
             </button>
 
             @if (isMegaOpen()) {
@@ -573,20 +450,11 @@ import { AuthService } from '../../../core/services/auth';
               class="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 h-11 cursor-pointer transition-colors duration-150"
             >
               <span>Categories</span>
-              <svg
-                class="w-3.5 h-3.5 transition-transform duration-200"
+              <span
+                class="material-symbols-outlined text-[16px] transition-transform duration-200"
                 [class.rotate-180]="isCatOpen()"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                >expand_more</span
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
             </button>
 
             @if (isCatOpen()) {
@@ -658,16 +526,9 @@ import { AuthService } from '../../../core/services/auth';
             <button
               (click)="onSearch()"
               aria-label="Search"
-              class="absolute right-3 top-2.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+              class="absolute right-3 top-2.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              <span class="material-symbols-outlined text-[20px]">search</span>
             </button>
           </div>
 
@@ -752,6 +613,20 @@ import { AuthService } from '../../../core/services/auth';
       }
     </header>
   `,
+  styles: [
+    `
+      .rubik-glitch-regular {
+        font-family: 'Rubik Glitch', system-ui;
+        font-weight: 400;
+        font-style: normal;
+      }
+      .press-start-2p-regular {
+        font-family: 'Press Start 2P', system-ui;
+        font-weight: 400;
+        font-style: normal;
+      }
+    `,
+  ],
 })
 export class Navbar {
   private router = inject(Router);

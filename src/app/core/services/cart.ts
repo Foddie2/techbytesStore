@@ -23,13 +23,24 @@ export interface CartDetails {
 
 export interface BuyerIdentityInput {
   email: string;
-  phone?: string; // M-Pesa phone number (e.g., 0712345678 or +254712345678)
+  phone?: string;
   firstName: string;
   lastName: string;
   address1: string;
   city: string;
   zip?: string;
-  countryCode?: string; // Defaults to 'KE' for Kenya
+  countryCode?: string; // e.g. 'KE', 'US', 'GB', 'CA'
+  paymentMethod?: 'mpesa' | 'card_paypal';
+}
+
+export interface UpsellOffer {
+  variantId: string;
+  productTitle: string;
+  variantTitle: string;
+  price: { amount: string; currencyCode: string };
+  originalPrice: { amount: string; currencyCode: string };
+  imageUrl: string;
+  discountBadge: string;
 }
 
 @Injectable({
@@ -48,7 +59,28 @@ export class CartService {
   isLoading = signal<boolean>(false);
   cart = signal<CartDetails | null>(null);
 
+  // High-Margin Dropshipping Upsell Offer
+  upsellOffer = signal<UpsellOffer>({
+    variantId: 'gid://shopify/ProductVariant/upsell-cable-organizer',
+    productTitle: 'DigiTex Pro Cable Organizer & Clip',
+    variantTitle: 'Stealth Black',
+    price: { amount: '12.00', currencyCode: 'USD' },
+    originalPrice: { amount: '20.00', currencyCode: 'USD' },
+    imageUrl: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=300&q=80',
+    discountBadge: '40% OFF - PAIRED DISCOUNT',
+  });
+
   itemCount = computed(() => this.cart()?.totalQuantity || 0);
+
+  hasUpsellInCart = computed(() => {
+    const currentLines = this.cart()?.lines || [];
+    const upsellId = this.upsellOffer().variantId;
+    return currentLines.some((item) => item.variantId === upsellId);
+  });
+
+  showUpsell = computed(() => {
+    return (this.cart()?.totalQuantity || 0) > 0 && !this.hasUpsellInCart();
+  });
 
   private get isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
@@ -272,32 +304,34 @@ export class CartService {
   }
 
   /**
-   * Formats Kenyan phone numbers to E.164 standard (+254...) required by Shopify & M-Pesa gateways
+   * Formats Kenyan Safaricom phone numbers to E.164 (+254...) or formats international numbers
    */
-  public formatMpesaPhone(phone?: string): string | undefined {
+  public formatPhone(phone?: string, countryCode = 'KE'): string | undefined {
     if (!phone) return undefined;
     let cleaned = phone.replace(/\s+/g, '').replace(/-/g, '');
-    if (cleaned.startsWith('0')) {
-      cleaned = '+254' + cleaned.substring(1);
-    } else if (cleaned.startsWith('254')) {
-      cleaned = '+' + cleaned;
-    } else if (!cleaned.startsWith('+') && cleaned.length >= 9) {
-      cleaned = '+254' + cleaned;
+    if (countryCode === 'KE') {
+      if (cleaned.startsWith('0')) {
+        return '+254' + cleaned.substring(1);
+      } else if (cleaned.startsWith('254')) {
+        return '+' + cleaned;
+      }
+    }
+    if (!cleaned.startsWith('+')) {
+      return '+' + cleaned;
     }
     return cleaned;
   }
 
   /**
-   * Native Shopify Storefront API Buyer Identity Mutation
-   * Pre-fills customer email, M-Pesa phone, and shipping address inside the Shopify Cart.
+   * Binds Customer Identity (M-Pesa phone, email, delivery address) to Shopify Cart
    */
   async updateBuyerIdentity(buyerInfo: BuyerIdentityInput): Promise<string | null> {
     const cartId = this.cart()?.id;
     if (!cartId) return null;
 
     this.isLoading.set(true);
-    const formattedPhone = this.formatMpesaPhone(buyerInfo.phone);
     const country = buyerInfo.countryCode || 'KE';
+    const formattedPhone = this.formatPhone(buyerInfo.phone, country);
 
     const mutation = `
       mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
@@ -370,18 +404,6 @@ export class CartService {
     }
 
     return this.cart()?.checkoutUrl || null;
-  }
-
-  /**
-   * Binds customer details (including M-Pesa phone) to Shopify Cart and redirects directly to checkout
-   */
-  async proceedToPreFilledCheckout(buyerInfo: BuyerIdentityInput): Promise<void> {
-    const checkoutUrl = await this.updateBuyerIdentity(buyerInfo);
-    if (checkoutUrl && this.isBrowser) {
-      window.location.href = checkoutUrl;
-    } else {
-      this.proceedToCheckout();
-    }
   }
 
   private async createCart(variantId: string, quantity: number): Promise<void> {
