@@ -35,8 +35,9 @@ export default async function handler(req, res) {
     }
 
     const systemInstructionText = `
-      You are 'Byte', a witty, knowledgeable hardware expert and fellow tech enthusiast at DigiTex in Nairobi.
-      Talk naturally like a human tech peer on Slack or WhatsApp.
+      You are 'Byte', a lead technical hardware guide and fellow tech enthusiast at DigiTex in Nairobi.
+      Talk naturally like a human tech peer on Slack or WhatsApp: warm, direct, wittily knowledgeable, and conversational.
+      NEVER say "As an AI language model", "How may I assist you today?", or write generic bullet lists.
       Keep responses concise (1 to 3 short sentences).
     `;
 
@@ -76,7 +77,7 @@ export default async function handler(req, res) {
         .json({ error: data?.error?.message || 'Gemini API Error' });
     }
 
-    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'I am online!';
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Byte online!';
     return res.status(200).json({ text: responseText });
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Server error' });
