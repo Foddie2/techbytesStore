@@ -1,5 +1,5 @@
-export default async function handler(req: any, res: any) {
-  // CORS Headers
+module.exports = async function handler(req, res) {
+  // 1. Set CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,19 +13,27 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // FIX (TS4111): Use bracket notation for process.env
-    const apiKey = (globalThis as typeof globalThis & {
-      process?: { env?: Record<string, string | undefined> };
-    }).process?.env?.['GEMINI_API_KEY'];
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       console.error('GEMINI_API_KEY missing in Vercel environment.');
-      return res
-        .status(500)
-        .json({ error: 'GEMINI_API_KEY is not configured in Vercel settings.' });
+      return res.status(500).json({
+        error: 'GEMINI_API_KEY is not configured in Vercel Environment Variables.',
+      });
     }
 
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-    const { prompt, history } = body;
+    // 2. Safe Body Parsing
+    let body = req.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        body = {};
+      }
+    }
+    body = body || {};
+
+    const prompt = body.prompt;
+    const history = body.history || [];
 
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt is required' });
@@ -38,12 +46,12 @@ export default async function handler(req: any, res: any) {
       Keep responses concise (1 to 3 short sentences).
     `;
 
-    const rawHistory = history || [];
-    const firstUserIdx = rawHistory.findIndex((msg: any) => msg.sender === 'user');
-    const validHistory = firstUserIdx !== -1 ? rawHistory.slice(firstUserIdx) : [];
+    // 3. Ensure History Starts with User Message
+    const firstUserIdx = history.findIndex((msg) => msg.sender === 'user');
+    const validHistory = firstUserIdx !== -1 ? history.slice(firstUserIdx) : [];
 
     const formattedContents = [
-      ...validHistory.map((msg: any) => ({
+      ...validHistory.map((msg) => ({
         role: msg.sender === 'user' ? 'user' : 'model',
         parts: [{ text: msg.text }],
       })),
@@ -81,6 +89,7 @@ export default async function handler(req: any, res: any) {
       },
     };
 
+    // 4. Direct REST Call to Gemini 3.6 Flash
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(geminiUrl, {
@@ -92,7 +101,7 @@ export default async function handler(req: any, res: any) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Google Gemini API REST Error:', data);
+      console.error('Google Gemini API Error:', data);
       return res.status(response.status).json({
         error: data?.error?.message || 'Gemini REST API Error',
         text: 'Connection dipped for a second. Mind firing that query over once more?',
@@ -102,7 +111,8 @@ export default async function handler(req: any, res: any) {
     const candidate = data.candidates?.[0];
     const parts = candidate?.content?.parts || [];
 
-    const functionCallPart = parts.find((p: any) => p.functionCall);
+    // 5. Handle Tool Calls
+    const functionCallPart = parts.find((p) => p.functionCall);
     if (functionCallPart) {
       const args = functionCallPart.functionCall.args || {};
       return res.status(200).json({
@@ -113,13 +123,13 @@ export default async function handler(req: any, res: any) {
 
     const responseText =
       parts
-        .map((p: any) => p.text)
+        .map((p) => p.text)
         .filter(Boolean)
         .join('\n') || 'I am right here! How can I help?';
 
     return res.status(200).json({ text: responseText });
-  } catch (err: any) {
-    console.error('Vercel Handler Exception:', err);
+  } catch (err) {
+    console.error('Vercel Function Exception:', err);
     return res.status(500).json({ error: err?.message || 'Server error' });
   }
-}
+};
