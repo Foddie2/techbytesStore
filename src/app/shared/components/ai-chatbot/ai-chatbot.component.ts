@@ -1,15 +1,6 @@
-import {
-  Component,
-  signal,
-  inject,
-  ElementRef,
-  ViewChild,
-  effect,
-  PLATFORM_ID,
-} from '@angular/core';
+import { Component, inject, ElementRef, ViewChild, effect, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 
 import { AiChatbotService, ChatMessage, ChatProduct } from '../../../core/services/ai-chatbot';
 import { CartService } from '../../../core/services/cart';
@@ -18,10 +9,9 @@ import { AuthService } from '../../../core/services/auth';
 @Component({
   selector: 'app-ai-chatbot',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="fixed bottom-6 right-6 z-50">
-      <!-- Floating Trigger Launcher -->
       @if (!aiService.isOpen()) {
         <button
           (click)="aiService.toggleChat()"
@@ -32,18 +22,16 @@ import { AuthService } from '../../../core/services/auth';
           <span
             class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 text-xs font-bold pl-0 group-hover:pl-2"
           >
-            Ask KeyNna AI
+            Ask DigiTex AI
           </span>
           <span
             class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full animate-pulse"
           ></span>
         </button>
       } @else {
-        <!-- Chat Window Container -->
         <div
           class="w-[90vw] sm:w-96 h-[560px] max-h-[82vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-fadeIn"
         >
-          <!-- Header Bar -->
           <div
             class="p-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between border-b border-blue-900/40"
           >
@@ -54,7 +42,7 @@ import { AuthService } from '../../../core/services/auth';
                 ✨
               </div>
               <div>
-                <h3 class="text-xs font-black tracking-wide">KeyNna Concierge</h3>
+                <h3 class="text-xs font-black tracking-wide">Byte — Tech Concierge</h3>
                 <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online & Syncing
                   Storefront
@@ -69,7 +57,6 @@ import { AuthService } from '../../../core/services/auth';
             </button>
           </div>
 
-          <!-- Message Stream -->
           <div #scrollContainer class="flex-1 overflow-y-auto p-4 space-y-4 text-xs no-scrollbar">
             @for (msg of aiService.messages(); track msg.id) {
               <div [class.justify-end]="msg.sender === 'user'" class="flex items-start gap-2.5">
@@ -92,7 +79,6 @@ import { AuthService } from '../../../core/services/auth';
                 >
                   <p class="leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
 
-                  <!-- Dynamic Product Recommendation Cards -->
                   @if (msg.products && msg.products.length > 0) {
                     <div
                       class="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60"
@@ -129,7 +115,6 @@ import { AuthService } from '../../../core/services/auth';
                     </div>
                   }
 
-                  <!-- Lead Capture Form -->
                   @if (msg.leadCapture) {
                     <div
                       class="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 p-2.5 rounded-xl border border-blue-500/30 space-y-2 mt-2"
@@ -166,12 +151,11 @@ import { AuthService } from '../../../core/services/auth';
                 class="flex items-center gap-2 text-slate-400 text-[11px] font-bold animate-pulse"
               >
                 <span class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></span>
-                KeyNna AI is typing...
+                Byte is thinking...
               </div>
             }
           </div>
 
-          <!-- Quick Action Chips -->
           <div
             class="px-3 py-2 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar"
           >
@@ -182,10 +166,10 @@ import { AuthService } from '../../../core/services/auth';
               📦 Track Order
             </button>
             <button
-              (click)="sendQuickPrompt('Recommend wireless audio headphones')"
+              (click)="sendQuickPrompt('Recommend 100W GaN chargers')"
               class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-600 dark:text-slate-300 shrink-0 hover:border-blue-500 cursor-pointer"
             >
-              🎧 Audio Tech
+              ⚡ GaN Chargers
             </button>
             <button
               (click)="sendQuickPrompt('How does M-Pesa express checkout work?')"
@@ -195,7 +179,6 @@ import { AuthService } from '../../../core/services/auth';
             </button>
           </div>
 
-          <!-- Message Input Form -->
           <form
             (submit)="sendMessage($event)"
             class="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-2"
@@ -244,159 +227,36 @@ export class AiChatbotComponent {
 
   constructor() {
     effect(() => {
-      if (
-        isPlatformBrowser(this.platformId) &&
-        this.aiService.messages().length > 0 &&
-        this.aiService.isOpen()
-      ) {
-        setTimeout(() => this.scrollToBottom(), 100);
+      const messagesCount = this.aiService.messages().length;
+      const isOpen = this.aiService.isOpen();
+
+      if (isPlatformBrowser(this.platformId) && isOpen && messagesCount > 0) {
+        setTimeout(() => this.scrollToBottom(), 50);
       }
     });
   }
 
   sendQuickPrompt(promptText: string): void {
     this.inputText = promptText;
-    this.sendMessage(new Event('submit'));
+    this.sendMessage();
   }
 
-  async sendMessage(event: Event): Promise<void> {
-    event.preventDefault();
+  async sendMessage(event?: Event): Promise<void> {
+    if (event) event.preventDefault();
+
     const prompt = this.inputText.trim();
     if (!prompt || this.aiService.isThinking()) return;
 
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sender: 'user',
-      text: prompt,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    this.aiService.messages.update((prev) => [...prev, userMsg]);
     this.inputText = '';
-    this.aiService.isThinking.set(true);
 
-    try {
-      const userContext = {
-        userName: this.authService.currentUser()?.name || 'Customer',
-        userEmail: this.authService.currentUser()?.email || '',
-        isLoggedIn: this.authService.isLoggedIn(),
-        cartCount: this.cartService.itemCount(),
-      };
-
-      if (isPlatformBrowser(this.platformId)) {
-        const response = await fetch('/api/ai-chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt,
-            history: this.aiService.messages().slice(-6),
-            userContext,
-          }),
-        });
-
-        // If backend route exists and returns 200 OK
-        if (response.ok) {
-          const data = await response.json();
-          this.typeHumanResponse(data.text || 'How else may I assist you today?', data.products);
-          return;
-        }
-      }
-
-      // LOCAL DEV ENGINE (Executes when /api/ai-chat is not hosted locally)
-      const localAiReply = this.generateLocalAiResponse(prompt, userContext);
-      this.typeHumanResponse(localAiReply.text, localAiReply.products);
-    } catch (err) {
-      console.warn('API route offline, switching to local dev AI engine:', err);
-      const localAiReply = this.generateLocalAiResponse(prompt, {
-        userName: this.authService.currentUser()?.name || '',
-        isLoggedIn: this.authService.isLoggedIn(),
-        cartCount: this.cartService.itemCount(),
-      });
-      this.typeHumanResponse(localAiReply.text, localAiReply.products);
-    } finally {
-      this.aiService.isThinking.set(false);
-    }
-  }
-
-  /**
-   * Smart Local AI Engine for Localhost Testing
-   */
-  private generateLocalAiResponse(
-    prompt: string,
-    context: any,
-  ): { text: string; products?: ChatProduct[] } {
-    const lower = prompt.toLowerCase();
-    const name = context.userName ? context.userName.split(' ')[0] : '';
-    const greeting = name ? `Hey ${name}! ` : '';
-
-    if (lower.includes('track') || lower.includes('order') || lower.includes('shipment')) {
-      return {
-        text: `${greeting}You can inspect carrier updates and waybills live at /track-order. Enter your Order Number (#KA-XXXX) to check your dispatch status!`,
-      };
-    }
-
-    if (
-      lower.includes('headphone') ||
-      lower.includes('audio') ||
-      lower.includes('wireless') ||
-      lower.includes('recommend')
-    ) {
-      return {
-        text: `${greeting}Here are top-rated hardware picks matching your interest:`,
-        products: [
-          {
-            variantId: 'gid://shopify/ProductVariant/401',
-            title: 'Studio Pro ANC Wireless Headphones',
-            price: '$180.00 USD',
-            imageUrl: 'https://cdn.shopify.com/s/files/1/0000/0000/products/headphones.jpg',
-          },
-        ],
-      };
-    }
-
-    if (lower.includes('m-pesa') || lower.includes('mpesa') || lower.includes('pay')) {
-      return {
-        text: `${greeting}M-Pesa express STK push is fully supported! When checking out, enter your phone number to receive an instant PIN prompt on your phone.`,
-      };
-    }
-
-    return {
-      text: `${greeting}I'm connected to your active session (${context.cartCount} items in cart). Feel free to ask about product specs, shipping speeds, or M-Pesa payments!`,
+    const userContext = {
+      userName: this.authService.currentUser()?.name || 'Customer',
+      userEmail: this.authService.currentUser()?.email || '',
+      isLoggedIn: this.authService.isLoggedIn(),
+      cartCount: this.cartService.itemCount(),
     };
-  }
 
-  private typeHumanResponse(fullText: string, products?: ChatProduct[]): void {
-    const msgId = Date.now().toString();
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    this.aiService.messages.update((prev) => [
-      ...prev,
-      { id: msgId, sender: 'ai', text: '', timestamp, products: undefined },
-    ]);
-
-    if (!isPlatformBrowser(this.platformId)) {
-      this.aiService.messages.update((prev) =>
-        prev.map((m) => (m.id === msgId ? { ...m, text: fullText, products } : m)),
-      );
-      return;
-    }
-
-    let charIndex = 0;
-    const interval = setInterval(() => {
-      charIndex += Math.floor(Math.random() * 3) + 2;
-      const textChunk = fullText.slice(0, charIndex);
-
-      this.aiService.messages.update((prev) =>
-        prev.map((m) => (m.id === msgId ? { ...m, text: textChunk } : m)),
-      );
-
-      if (charIndex >= fullText.length) {
-        clearInterval(interval);
-        this.aiService.messages.update((prev) =>
-          prev.map((m) => (m.id === msgId ? { ...m, products } : m)),
-        );
-      }
-    }, 20);
+    await this.aiService.sendMessage(prompt, userContext);
   }
 
   async addQuickProduct(variantId: string): Promise<void> {
@@ -406,20 +266,22 @@ export class AiChatbotComponent {
 
   submitLead(): void {
     if (!this.leadEmail.trim()) return;
+
     this.aiService.messages.update((prev) => [
       ...prev,
       {
         id: Date.now().toString(),
         sender: 'ai',
-        text: `🎉 Code "KEYNNA10" has been applied for ${this.leadEmail}! You can now complete checkout using M-Pesa.`,
+        text: `🎉 Voucher code "DIGITEX10" activated for ${this.leadEmail}! Enter it at checkout for 10% off.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
+
     this.leadEmail = '';
   }
 
   private scrollToBottom(): void {
-    if (this.scrollContainer && this.scrollContainer.nativeElement) {
+    if (this.scrollContainer?.nativeElement) {
       this.scrollContainer.nativeElement.scrollTop =
         this.scrollContainer.nativeElement.scrollHeight;
     }

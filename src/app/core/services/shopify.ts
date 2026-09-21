@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { createStorefrontApiClient } from '@shopify/storefront-api-client';
-import { environment } from '../../../environments/environment';
+import { createStorefrontApiClient, StorefrontApiClient } from '@shopify/storefront-api-client';
+import { environment } from '../../../environments/environment.development';
 import { Product, Cart } from '../models/shopify.model';
 
 @Injectable({
@@ -9,15 +9,43 @@ import { Product, Cart } from '../models/shopify.model';
 })
 export class ShopifyService {
   private platformId = inject(PLATFORM_ID);
-
-  private client = createStorefrontApiClient({
-    storeDomain: environment.shopifyDomain,
-    apiVersion: environment.apiVersion || '2026-01',
-    publicAccessToken: environment.shopifyToken,
-  });
+  private _client: StorefrontApiClient | null = null;
 
   private get isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
+  }
+
+  /**
+   * Lazy-initializes and validates the Storefront API Client
+   */
+  private get client(): StorefrontApiClient {
+    if (!this._client) {
+      const rawDomain = environment.shopifyDomain || '';
+      const cleanDomain = rawDomain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const token = environment.shopifyToken || '';
+
+      // Diagnostic Guardrail
+      if (!cleanDomain || cleanDomain.includes('YOUR_') || !token || token.includes('YOUR_')) {
+        console.error('❌ [Shopify Config Error] Missing or invalid domain/token in environment:', {
+          shopifyDomain: rawDomain,
+          cleanDomain,
+          hasToken: !!token,
+        });
+      } else {
+        console.log('✅ [Shopify Client Initialized]', {
+          domain: cleanDomain,
+          apiVersion: environment.apiVersion || '2026-01',
+        });
+      }
+
+      this._client = createStorefrontApiClient({
+        storeDomain: cleanDomain,
+        apiVersion: environment.apiVersion || '2026-01',
+        publicAccessToken: token,
+      });
+    }
+
+    return this._client;
   }
 
   /**
@@ -64,12 +92,24 @@ export class ShopifyService {
       }
     `;
 
-    const { data, errors } = await this.client.request(query, {
-      variables: { limit },
-    });
+    try {
+      const { data, errors } = await this.client.request(query, {
+        variables: { limit },
+      });
 
-    if (errors) throw errors;
-    return data?.products?.edges?.map((edge: any) => edge.node) || [];
+      if (errors) {
+        console.error('⚠️ [Shopify GraphQL Errors]:', errors);
+        throw errors;
+      }
+
+      return data?.products?.edges?.map((edge: any) => edge.node) || [];
+    } catch (error: any) {
+      console.error('💥 [Shopify getProducts Failed]:', {
+        message: error.message,
+        domainUsed: environment.shopifyDomain,
+      });
+      return [];
+    }
   }
 
   /**
@@ -94,19 +134,24 @@ export class ShopifyService {
       }
     `;
 
-    const { data, errors }: any = await this.client.request(mutation, {
-      variables: {
-        cartId,
-        lines: [{ merchandiseId: variantId, quantity }],
-      },
-    });
+    try {
+      const { data, errors }: any = await this.client.request(mutation, {
+        variables: {
+          cartId,
+          lines: [{ merchandiseId: variantId, quantity }],
+        },
+      });
 
-    if (errors || !data?.cartLinesAdd?.cart) {
+      if (errors || !data?.cartLinesAdd?.cart) {
+        if (this.isBrowser) localStorage.removeItem('cart_id');
+        return this.createCart(variantId, quantity);
+      }
+
+      return data.cartLinesAdd.cart;
+    } catch (error) {
       if (this.isBrowser) localStorage.removeItem('cart_id');
       return this.createCart(variantId, quantity);
     }
-
-    return data.cartLinesAdd.cart;
   }
 
   /**
@@ -153,6 +198,9 @@ export class ShopifyService {
     }
   }
 
+  /**
+   * Update Cart Buyer Identity using unified Storefront Client
+   */
   async updateCartBuyerIdentity(
     cartId: string,
     buyerDetails: {
@@ -165,7 +213,7 @@ export class ShopifyService {
       countryCode?: string;
     },
   ): Promise<string | null> {
-    const query = `
+    const mutation = `
       mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
         cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
           cart {
@@ -200,12 +248,17 @@ export class ShopifyService {
     };
 
     try {
-      // Execute query against Shopify Storefront API
-      const response = await this.graphQLRequest(query, variables);
-      const cartData = response?.data?.cartBuyerIdentityUpdate;
+      const { data, errors }: any = await this.client.request(mutation, { variables });
+
+      if (errors) {
+        console.error('Shopify Buyer Identity GraphQL Errors:', errors);
+        return null;
+      }
+
+      const cartData = data?.cartBuyerIdentityUpdate;
 
       if (cartData?.userErrors?.length > 0) {
-        console.warn('Shopify Buyer Identity Errors:', cartData.userErrors);
+        console.warn('Shopify Buyer Identity User Errors:', cartData.userErrors);
       }
 
       return cartData?.cart?.checkoutUrl || null;
@@ -213,21 +266,5 @@ export class ShopifyService {
       console.error('Failed to sync buyer identity with Shopify:', error);
       return null;
     }
-  }
-
-  // Fallback helper for raw Storefront GraphQL calls
-  private async graphQLRequest(query: string, variables: any): Promise<any> {
-    const domain = 'keyanna.myshopify.com';
-    const storefrontToken = 'YOUR_STOREFRONT_API_ACCESS_TOKEN';
-
-    const res = await fetch(`https://${domain}/api/2026-01/graphql.json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': storefrontToken,
-      },
-      body: JSON.stringify({ query, variables }),
-    });
-    return await res.json();
   }
 }

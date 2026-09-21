@@ -2,7 +2,7 @@ import { Component, signal, computed, inject, OnInit, PLATFORM_ID } from '@angul
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { createStorefrontApiClient } from '@shopify/storefront-api-client';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.development';
 
 import { CartService } from '../../core/services/cart';
 import { CurrencyService } from '../../core/services/currency';

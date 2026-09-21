@@ -88,14 +88,14 @@ import { AuthService } from '../../../core/services/auth';
             <!-- Dark Mode Switcher -->
             <button
               (click)="themeService.toggleDarkMode()"
-              class="p-1 rounded-md hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-colors duration-200 cursor-pointer flex items-center justify-center"
+              class=" rounded-md hover:bg-transparent dark:hover:bg-transparent transition-colors duration-200 cursor-pointer flex items-center justify-center"
               [attr.aria-label]="
                 themeService.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'
               "
               title="Toggle Theme"
             >
               @if (themeService.isDarkMode()) {
-                <span class="material-symbols-outlined text-[15px] text-amber-400">light_mode</span>
+                <span class="material-symbols-outlined text-[15px] text-blue-400">light_mode</span>
               } @else {
                 <span class="material-symbols-outlined text-[15px] text-slate-600">dark_mode</span>
               }

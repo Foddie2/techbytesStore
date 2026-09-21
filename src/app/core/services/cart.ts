@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { createStorefrontApiClient } from '@shopify/storefront-api-client';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.development';
 
 export interface CartItem {
   id: string; // Line item ID in Shopify

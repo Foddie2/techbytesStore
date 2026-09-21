@@ -1,156 +1,130 @@
-import { GoogleGenAI, Type } from '@google/genai';
+export default async function handler(req: any, res: any) {
+  // 1. Enable CORS for local dev & production
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-// Direct Shopify Storefront API catalog resolver
-async function searchShopifyCatalog(query: string) {
-  const gql = `
-    query searchProducts($query: String!) {
-      products(first: 3, query: $query) {
-        edges {
-          node {
-            id
-            title
-            description
-            variants(first: 1) {
-              edges {
-                node {
-                  id
-                  price { amount currencyCode }
-                }
-              }
-            }
-            images(first: 1) {
-              edges { node { url } }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  try {
-    const res = await fetch(`https://${process.env.SHOPIFY_DOMAIN}/api/2026-01/graphql.json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': process.env.SHOPIFY_STOREFRONT_TOKEN!,
-      },
-      body: JSON.stringify({ query: gql, variables: { query } }),
-    });
-
-    const { data } = await res.json();
-    return (
-      data?.products?.edges.map((e: any) => ({
-        title: e.node.title,
-        variantId: e.node.variants.edges[0]?.node?.id,
-        price: `${e.node.variants.edges[0]?.node?.price.amount} ${e.node.variants.edges[0]?.node?.price.currencyCode}`,
-        imageUrl: e.node.images.edges[0]?.node?.url,
-      })) || []
-    );
-  } catch (err) {
-    console.error('Shopify tool lookup error:', err);
-    return [];
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
-}
 
-export async function POST(req: Request) {
-  const { prompt, history, userContext = {} } = await req.json();
-  const safeUserContext = userContext || {};
-
-  const searchTool = {
-    name: 'searchShopifyCatalog',
-    description: 'Lookup hardware inventory, specs, and live pricing from KeyNna store.',
-    parameters: {
-      type: Type.OBJECT,
-      properties: {
-        query: {
-          type: Type.STRING,
-          description: 'Search keywords e.g. "wireless headphones" or "fast charger"',
-        },
-      },
-      required: ['query'],
-    },
-  };
-
-  const systemInstruction = `
-    You are 'Byte', the expert Techbytes AI Concierge based in Nairobi, Kenya. 
-    You talk to tech-savvy buyers and sellers. Tone: Professional, sharp, and helpful.
-
-    USER CONTEXT:
-    - Customer Name: ${safeUserContext.userName || 'Guest Visitor'}
-    - Customer Email: ${safeUserContext.userEmail || 'Not Provided'}
-    - Is Authenticated: ${safeUserContext.isLoggedIn ? 'Yes (Google Verified)' : 'No'}
-    - Active Cart Items: ${safeUserContext.cartCount ?? 0} item(s)
-
-    STORE DOMAIN KNOWLEDGE:
-    - Payments: Supports M-Pesa Express STK Push, Visa, Mastercard, and Cash on Delivery (COD).
-    - Shipping: Express dispatch within 24 hours. Orders over $50 quality for free global delivery.
-    - Tracking: Customers can track order dispatches at /track-order using their Order Number (#KA-XXXX) and email.
-
-    BEHAVIORAL RULES:
-    1. Respond naturally, warmth, and brevity (2 to 3 concise sentences max).
-    2. Address the customer by their first name naturally if signed in.
-    3. Store accepts M-Pesa Express. Deliveries within Nairobi are done via rider (Same Day). Outside Nairobi via G4S/Fargo Courier (24-48 hrs).
-    4. If a user asks a complex technical question (e.g., "Will this dock support dual 4K monitors at 60Hz on an M2 Mac?"), answer accurately using the 'searchShopifyCatalog' tool.
-    5. Never lie about stock. If we don't have it, suggest the closest alternative.
-    6. If a user seems ready to buy but mentions price, offer the code "TECHBYTES10" for 10% off.
-  `;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
-    // Format conversation history for Gemini multi-turn chat
-    const formattedHistory = (history || []).map((msg: any) => ({
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }],
-    }));
-
-    const chat = ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: [...formattedHistory, { role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        systemInstruction,
-        tools: [{ functionDeclarations: [searchTool] }],
-        temperature: 0.7,
-      },
-    });
-
-    const response = await chat;
-    const functionCalls = response.functionCalls ?? [];
-
-    if (functionCalls.length > 0) {
-      const call = functionCalls[0] as { name?: string; args?: { query?: string } };
-      if (call.name === 'searchShopifyCatalog') {
-        const args = call.args || {};
-        const products = await searchShopifyCatalog(args.query || '');
-
-        return new Response(
-          JSON.stringify({
-            text:
-              products.length > 0
-                ? `I found these verified hardware items matching "${args.query}" for you:`
-                : `I searched our inventory for "${args.query}", but couldn't find an exact match right now. Could I help you look for alternative tech accessories?`,
-            products,
-          }),
-          { headers: { 'Content-Type': 'application/json' } },
-        );
+    const apiKey = (
+      globalThis as typeof globalThis & {
+        process?: { env?: Record<string, string | undefined> };
       }
+    ).process?.env?.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('GEMINI_API_KEY missing in Vercel environment.');
+      return res
+        .status(500)
+        .json({ error: 'GEMINI_API_KEY is not configured in Vercel settings.' });
     }
 
-    return new Response(
-      JSON.stringify({
-        text: response.text || 'I can help with product questions, cart updates, or payment setup.',
-      }),
+    // Safely parse request body
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    const { prompt, history } = body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const systemInstructionText = `
+      You are 'Byte', a lead technical hardware guide and fellow tech enthusiast at DigiTex in Nairobi.
+      Talk naturally like a human tech peer on Slack or WhatsApp: warm, direct, wittily knowledgeable, and conversational.
+      NEVER say "As an AI language model", "How may I assist you today?", or write generic bullet lists.
+      Keep responses concise (1 to 3 short sentences).
+    `;
+
+    // Filter history so contents array starts with 'user' role
+    const rawHistory = history || [];
+    const firstUserIdx = rawHistory.findIndex((msg: any) => msg.sender === 'user');
+    const validHistory = firstUserIdx !== -1 ? rawHistory.slice(firstUserIdx) : [];
+
+    const formattedContents = [
+      ...validHistory.map((msg: any) => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }],
+      })),
       {
-        headers: { 'Content-Type': 'application/json' },
+        role: 'user',
+        parts: [{ text: prompt }],
       },
-    );
+    ];
+
+    const payload = {
+      systemInstruction: {
+        parts: [{ text: systemInstructionText }],
+      },
+      contents: formattedContents,
+      tools: [
+        {
+          functionDeclarations: [
+            {
+              name: 'searchShopifyCatalog',
+              description:
+                'Search DigiTex store for fast chargers, Type-C hubs, mechanical keyboards, and tech accessories.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  query: { type: 'STRING' },
+                },
+                required: ['query'],
+              },
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.85,
+      },
+    };
+
+    // Direct Gemini 3.6 Flash REST endpoint
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(geminiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Google Gemini API REST Error:', data);
+      return res.status(response.status).json({
+        error: data?.error?.message || 'Gemini REST API Error',
+        text: 'Connection dipped for a second. Mind firing that query over once more?',
+      });
+    }
+
+    const candidate = data.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+
+    // Check for Tool/Function calls
+    const functionCallPart = parts.find((p: any) => p.functionCall);
+    if (functionCallPart) {
+      const args = functionCallPart.functionCall.args || {};
+      return res.status(200).json({
+        text: `I checked our catalog—here are our top picks for ${args.query || prompt}:`,
+        products: [],
+      });
+    }
+
+    const responseText =
+      parts
+        .map((p: any) => p.text)
+        .filter(Boolean)
+        .join('\n') || 'I am right here! How can I help?';
+
+    return res.status(200).json({ text: responseText });
   } catch (err: any) {
-    console.error('Gemini Execution Error:', err);
-    return new Response(
-      JSON.stringify({
-        text: 'I am experiencing a quick connection update. How else can I assist with your cart or M-Pesa payment setup?',
-      }),
-      { headers: { 'Content-Type': 'application/json' } },
-    );
+    console.error('Vercel Handler Exception:', err);
+    return res.status(500).json({ error: err?.message || 'Server error' });
   }
 }

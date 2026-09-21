@@ -578,11 +578,7 @@ export class ProductsPageComponent implements OnInit {
     if (!currentProduct) return [];
     const brand = this.getBrandName(currentProduct);
     return this.allProducts()
-      .filter(
-        (p) =>
-          p.id !== currentProduct.id &&
-          this.getBrandName(p) === brand,
-      )
+      .filter((p) => p.id !== currentProduct.id && this.getBrandName(p) === brand)
       .slice(0, 3);
   }
 
