@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // 1. Set CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // 2. Safe Body Parsing
+    // 2. Body Parsing (handles JSON string or object)
     let body = req.body;
     if (typeof body === 'string') {
       try {
@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
       Keep responses concise (1 to 3 short sentences).
     `;
 
-    // 3. Ensure History Starts with User Message
+    // 3. Ensure History Starts with User Role
     const firstUserIdx = history.findIndex((msg) => msg.sender === 'user');
     const validHistory = firstUserIdx !== -1 ? history.slice(firstUserIdx) : [];
 
@@ -132,4 +132,4 @@ module.exports = async function handler(req, res) {
     console.error('Vercel Function Exception:', err);
     return res.status(500).json({ error: err?.message || 'Server error' });
   }
-};
+}
