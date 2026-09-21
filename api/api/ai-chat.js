@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // 1. Set CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,15 +12,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env['GEMINI_API_KEY'];
     if (!apiKey) {
-      console.error('GEMINI_API_KEY missing in Vercel environment.');
-      return res.status(500).json({
-        error: 'GEMINI_API_KEY is not configured in Vercel Environment Variables.',
-      });
+      return res.status(500).json({ error: 'GEMINI_API_KEY missing in Vercel settings.' });
     }
 
-    // 2. Body Parsing (handles JSON string or object)
     let body = req.body;
     if (typeof body === 'string') {
       try {
@@ -40,13 +35,11 @@ export default async function handler(req, res) {
     }
 
     const systemInstructionText = `
-      You are 'Byte', a lead technical hardware guide and fellow tech enthusiast at DigiTex in Nairobi.
-      Talk naturally like a human tech peer on Slack or WhatsApp: warm, direct, wittily knowledgeable, and conversational.
-      NEVER say "As an AI language model", "How may I assist you today?", or write generic bullet lists.
+      You are 'Byte', a witty, knowledgeable hardware expert and fellow tech enthusiast at DigiTex in Nairobi.
+      Talk naturally like a human tech peer on Slack or WhatsApp.
       Keep responses concise (1 to 3 short sentences).
     `;
 
-    // 3. Ensure History Starts with User Role
     const firstUserIdx = history.findIndex((msg) => msg.sender === 'user');
     const validHistory = firstUserIdx !== -1 ? history.slice(firstUserIdx) : [];
 
@@ -62,34 +55,11 @@ export default async function handler(req, res) {
     ];
 
     const payload = {
-      systemInstruction: {
-        parts: [{ text: systemInstructionText }],
-      },
+      systemInstruction: { parts: [{ text: systemInstructionText }] },
       contents: formattedContents,
-      tools: [
-        {
-          functionDeclarations: [
-            {
-              name: 'searchShopifyCatalog',
-              description:
-                'Search DigiTex store for fast chargers, Type-C hubs, mechanical keyboards, and tech accessories.',
-              parameters: {
-                type: 'OBJECT',
-                properties: {
-                  query: { type: 'STRING' },
-                },
-                required: ['query'],
-              },
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.85,
-      },
+      generationConfig: { temperature: 0.85 },
     };
 
-    // 4. Direct REST Call to Gemini 3.6 Flash
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(geminiUrl, {
@@ -101,35 +71,14 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Google Gemini API Error:', data);
-      return res.status(response.status).json({
-        error: data?.error?.message || 'Gemini REST API Error',
-        text: 'Connection dipped for a second. Mind firing that query over once more?',
-      });
+      return res
+        .status(response.status)
+        .json({ error: data?.error?.message || 'Gemini API Error' });
     }
 
-    const candidate = data.candidates?.[0];
-    const parts = candidate?.content?.parts || [];
-
-    // 5. Handle Tool Calls
-    const functionCallPart = parts.find((p) => p.functionCall);
-    if (functionCallPart) {
-      const args = functionCallPart.functionCall.args || {};
-      return res.status(200).json({
-        text: `I checked our catalog—here are our top picks for ${args.query || prompt}:`,
-        products: [],
-      });
-    }
-
-    const responseText =
-      parts
-        .map((p) => p.text)
-        .filter(Boolean)
-        .join('\n') || 'I am right here! How can I help?';
-
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'I am online!';
     return res.status(200).json({ text: responseText });
   } catch (err) {
-    console.error('Vercel Function Exception:', err);
-    return res.status(500).json({ error: err?.message || 'Server error' });
+    return res.status(500).json({ error: err.message || 'Server error' });
   }
 }
