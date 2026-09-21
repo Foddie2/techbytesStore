@@ -1,8 +1,14 @@
 export default async function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+  );
 
+  // Instantly resolve browser CORS preflight checks
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -14,7 +20,8 @@ export default async function handler(req, res) {
   try {
     const apiKey = process.env['GEMINI_API_KEY'];
     if (!apiKey) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY missing in Vercel settings.' });
+      console.error('GEMINI_API_KEY is missing in Vercel settings.');
+      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on Vercel.' });
     }
 
     let body = req.body;
@@ -58,6 +65,24 @@ export default async function handler(req, res) {
     const payload = {
       systemInstruction: { parts: [{ text: systemInstructionText }] },
       contents: formattedContents,
+      tools: [
+        {
+          functionDeclarations: [
+            {
+              name: 'searchShopifyCatalog',
+              description:
+                'Search DigiTex store for fast chargers, Type-C hubs, mechanical keyboards, and tech accessories.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  query: { type: 'STRING' },
+                },
+                required: ['query'],
+              },
+            },
+          ],
+        },
+      ],
       generationConfig: { temperature: 0.85 },
     };
 
@@ -72,14 +97,33 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res
-        .status(response.status)
-        .json({ error: data?.error?.message || 'Gemini API Error' });
+      console.error('Google Gemini API REST Error:', data);
+      return res.status(response.status).json({
+        error: data?.error?.message || 'Gemini REST API Error',
+        text: 'Connection dipped for a second. Mind firing that query over once more?',
+      });
     }
 
-    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Byte online!';
+    const candidate = data.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+
+    const functionCallPart = parts.find((p) => p.functionCall);
+    if (functionCallPart) {
+      const args = functionCallPart.functionCall.args || {};
+      return res.status(200).json({
+        text: `I checked our catalog—here are our top picks for ${args.query || prompt}:`,
+        products: [],
+      });
+    }
+
+    const responseText =
+      parts
+        .map((p) => p.text)
+        .filter(Boolean)
+        .join('\n') || 'Byte online!';
     return res.status(200).json({ text: responseText });
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'Server error' });
+    console.error('Vercel Handler Exception:', err);
+    return res.status(500).json({ error: err?.message || 'Server error' });
   }
 }
