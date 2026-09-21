@@ -1,5 +1,5 @@
 export default async function handler(req: any, res: any) {
-  // 1. Enable CORS for local dev & production
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,11 +13,10 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const apiKey = (
-      globalThis as typeof globalThis & {
-        process?: { env?: Record<string, string | undefined> };
-      }
-    ).process?.env?.GEMINI_API_KEY;
+    // FIX (TS4111): Use bracket notation for process.env
+    const apiKey = (globalThis as typeof globalThis & {
+      process?: { env?: Record<string, string | undefined> };
+    }).process?.env?.['GEMINI_API_KEY'];
     if (!apiKey) {
       console.error('GEMINI_API_KEY missing in Vercel environment.');
       return res
@@ -25,7 +24,6 @@ export default async function handler(req: any, res: any) {
         .json({ error: 'GEMINI_API_KEY is not configured in Vercel settings.' });
     }
 
-    // Safely parse request body
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     const { prompt, history } = body;
 
@@ -40,7 +38,6 @@ export default async function handler(req: any, res: any) {
       Keep responses concise (1 to 3 short sentences).
     `;
 
-    // Filter history so contents array starts with 'user' role
     const rawHistory = history || [];
     const firstUserIdx = rawHistory.findIndex((msg: any) => msg.sender === 'user');
     const validHistory = firstUserIdx !== -1 ? rawHistory.slice(firstUserIdx) : [];
@@ -84,7 +81,6 @@ export default async function handler(req: any, res: any) {
       },
     };
 
-    // Direct Gemini 3.6 Flash REST endpoint
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(geminiUrl, {
@@ -106,7 +102,6 @@ export default async function handler(req: any, res: any) {
     const candidate = data.candidates?.[0];
     const parts = candidate?.content?.parts || [];
 
-    // Check for Tool/Function calls
     const functionCallPart = parts.find((p: any) => p.functionCall);
     if (functionCallPart) {
       const args = functionCallPart.functionCall.args || {};
