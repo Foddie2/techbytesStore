@@ -14,10 +14,13 @@
       ]
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/ai-chat",
-      "destination": "/api/ai-chat.js"
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "handle": "filesystem"
     }
   ]
 }
