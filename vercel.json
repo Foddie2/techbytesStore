@@ -13,5 +13,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/ai-chat",
+      "destination": "/api/ai-chat.js"
+    }
   ]
 }
