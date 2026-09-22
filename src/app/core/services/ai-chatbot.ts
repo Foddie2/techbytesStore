@@ -1,6 +1,5 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { environment } from '../../../environments/environment.development';
 
 export interface ChatProduct {
   variantId: string;
@@ -70,9 +69,9 @@ export class AiChatbotService {
     const trimmedText = userText.trim();
     if (!trimmedText || this.isThinking()) return;
 
-    // Build history excluding current prompt
+    // Build history excluding initial greeting
     const cleanHistory = this.messages()
-      .filter((m) => m.id !== '1') // Exclude initial greeting to start history with 'user'
+      .filter((m) => m.id !== '1')
       .map((m) => ({
         sender: m.sender,
         text: m.text,
@@ -92,13 +91,14 @@ export class AiChatbotService {
     let responseProducts: ChatProduct[] = [];
 
     try {
-      const apiUrl = environment.production
-        ? '/api/ai-chat'
-        : 'https://techbytes-store.vercel.app/api/ai-chat';
-
-      console.log('📡 [Byte Sending Request to]:', apiUrl);
+      // ✅ ALWAYS USE RELATIVE PATH:
+      // Local dev uses proxy.conf.json -> https://techbytes-store.vercel.app
+      // Production uses native Vercel route directly on the same origin
+      const apiUrl = '/api/ai-chat';
 
       if (isPlatformBrowser(this.platformId)) {
+        console.log('📡 [Byte Sending Request via proxy]:', apiUrl);
+
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -112,22 +112,26 @@ export class AiChatbotService {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          // EXPOSE THE BACKEND ERROR DIRECTLY
-          fullResponseText = `🚨 BACKEND ERROR (${response.status}): ${data.error || data.text || 'Check Vercel logs'}`;
+          console.error('Backend Status Error:', response.status, data);
+          fullResponseText =
+            data.text ||
+            data.error ||
+            'Connection dipped for a second. Mind firing that query over once more?';
         } else {
-          fullResponseText = data.text || 'No text returned from Gemini.';
+          fullResponseText = data.text || 'Byte online! How can I assist with your setup?';
           responseProducts = data.products || [];
         }
       }
     } catch (err: any) {
-      // EXPOSE THE NETWORK ERROR DIRECTLY
       console.error('💥 [Fetch Exception]:', err);
-      fullResponseText = `🚨 NETWORK ERROR: Unable to reach endpoint. Message: ${err.message}`;
+      fullResponseText = 'Connection dipped for a second. Mind firing that query over once more?';
     } finally {
       this.isThinking.set(false);
     }
 
-    await this.streamToSignal(fullResponseText, responseProducts);
+    if (fullResponseText) {
+      await this.streamToSignal(fullResponseText, responseProducts);
+    }
   }
 
   private async streamToSignal(fullText: string, products?: ChatProduct[]): Promise<void> {

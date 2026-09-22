@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "functions": {
+    "api/ai-chat.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ]
+}

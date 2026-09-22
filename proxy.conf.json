@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://techbytes-store.vercel.app",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
