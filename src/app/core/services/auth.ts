@@ -16,6 +16,7 @@ declare const google: any;
 })
 export class AuthService {
   private platformId = inject(PLATFORM_ID);
+  private scriptLoadedPromise: Promise<void> | null = null;
 
   private readonly googleClientId =
     '148437308582-s7s39so50nalpo17o7q8oe1u5kjd1imo.apps.googleusercontent.com';
@@ -26,40 +27,57 @@ export class AuthService {
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       this.restoreSession();
-      this.loadGoogleScript();
+      this.scriptLoadedPromise = this.loadGoogleScript();
     }
   }
 
-  private loadGoogleScript(): void {
-    if (document.getElementById('google-jssdk')) return;
-    const script = document.createElement('script');
-    script.id = 'google-jssdk';
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
+  private loadGoogleScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (document.getElementById('google-jssdk')) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'google-jssdk';
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(err);
+      document.head.appendChild(script);
+    });
   }
 
   /**
-   * Opens the real Google Account Picker popup
+   * Opens the Google Account Picker popup in local & production
    */
-  loginWithGoogle(): void {
+  async loginWithGoogle(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    if (typeof google !== 'undefined' && google.accounts?.oauth2) {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: this.googleClientId,
-        scope: 'email profile openid',
-        callback: async (response: any) => {
-          if (response.access_token) {
-            await this.fetchGoogleUserProfile(response.access_token);
-          }
-        },
-      });
-      client.requestAccessToken();
-    } else {
-      // Fallback local session for testing if Client ID is pending setup
-      this.setMockUser('customer@keyanna.com', 'Valued Customer');
+    try {
+      // Ensure Google Identity Services SDK finishes loading
+      if (this.scriptLoadedPromise) {
+        await this.scriptLoadedPromise;
+      }
+
+      if (typeof google !== 'undefined' && google.accounts?.oauth2) {
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: this.googleClientId,
+          scope: 'email profile openid',
+          callback: async (response: any) => {
+            if (response.access_token) {
+              await this.fetchGoogleUserProfile(response.access_token);
+            } else if (response.error) {
+              console.error('Google OAuth Error Response:', response);
+            }
+          },
+        });
+        client.requestAccessToken();
+      } else {
+        console.error('Google SDK failed to load.');
+      }
+    } catch (err) {
+      console.error('Error during Google sign-in:', err);
     }
   }
 
@@ -68,11 +86,16 @@ export class AuthService {
       const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
+
+      if (!res.ok) {
+        throw new Error(`UserInfo API returned status ${res.status}`);
+      }
+
       const data = await res.json();
 
       const user: UserProfile = {
         id: data.sub,
-        name: data.name || 'Google Customer',
+        name: data.name || 'TechBytes Customer',
         email: data.email,
         picture: data.picture,
         initials: (data.name || data.email)
@@ -89,29 +112,16 @@ export class AuthService {
     }
   }
 
-  private setMockUser(email: string, name: string): void {
-    const mockUser: UserProfile = {
-      id: '#G-' + Math.floor(10000 + Math.random() * 90000),
-      name,
-      email,
-      initials: 'VC',
-    };
-    this.setUserSession(mockUser);
-  }
-
-  /**
-   * Updates currentUser and isLoggedIn signals simultaneously
-   */
   private setUserSession(user: UserProfile): void {
     this.currentUser.set(user);
     this.isLoggedIn.set(true);
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem('keyanna_customer', JSON.stringify(user));
+      localStorage.setItem('techbytes_customer', JSON.stringify(user));
     }
   }
 
   private restoreSession(): void {
-    const saved = localStorage.getItem('keyanna_customer');
+    const saved = localStorage.getItem('techbytes_customer');
     if (saved) {
       try {
         const user = JSON.parse(saved);
@@ -125,7 +135,7 @@ export class AuthService {
 
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('keyanna_customer');
+      localStorage.removeItem('techbytes_customer');
     }
     this.isLoggedIn.set(false);
     this.currentUser.set(null);
