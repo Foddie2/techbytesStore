@@ -47,7 +47,6 @@ interface HeroSlide {
         <div class="lg:col-span-7 space-y-8 text-center lg:text-left">
           <!-- Slide Pill & Progress Controls -->
           <div class="flex items-center justify-center lg:justify-start gap-3">
-            <!-- Carousel Indicators -->
             <div class="flex items-center gap-2 ml-2">
               @for (slide of slides(); track $index) {
                 <button
@@ -65,27 +64,38 @@ interface HeroSlide {
             </div>
           </div>
 
-          <!-- Dynamic Headline Area -->
-          <div class="min-h-35 sm:min-h-160px flex items-center">
-            <h1
-              class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-tight transition-opacity duration-500"
-            >
-              {{ activeSlide().headline }}
-              <span
-                class="block text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
+          <!-- CSS Grid Overlay Copy Container (Eliminates Text Heights Shaking) -->
+          <div class="grid grid-cols-1 grid-rows-1">
+            @for (slide of slides(); track $index) {
+              <div
+                class="col-start-1 row-start-1 space-y-6 transition-all duration-500 ease-in-out flex flex-col justify-center"
+                [class.opacity-100]="$index === currentIndex()"
+                [class.translate-y-0]="$index === currentIndex()"
+                [class.pointer-events-auto]="$index === currentIndex()"
+                [class.opacity-0]="$index !== currentIndex()"
+                [class.translate-y-1]="$index !== currentIndex()"
+                [class.pointer-events-none]="$index !== currentIndex()"
               >
-                {{ activeSlide().highlightText }}
-              </span>
-            </h1>
-          </div>
+                <!-- Dynamic Headline -->
+                <h1
+                  class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-tight"
+                >
+                  {{ slide.headline }}
+                  <span
+                    class="block text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-500 to-sky-600 dark:from-blue-400 dark:via-indigo-300 dark:to-sky-400 mt-1"
+                  >
+                    {{ slide.highlightText }}
+                  </span>
+                </h1>
 
-          <!-- Dynamic Description Area -->
-          <div class="min-h-72px sm:min-h-16 flex items-center">
-            <p
-              class="text-slate-600 dark:text-slate-300 text-md sm:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0 transition-opacity duration-500"
-            >
-              {{ activeSlide().description }}
-            </p>
+                <!-- Dynamic Description -->
+                <p
+                  class="text-slate-600 dark:text-slate-300 text-md sm:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto lg:mx-0"
+                >
+                  {{ slide.description }}
+                </p>
+              </div>
+            }
           </div>
 
           <!-- Dual CTAs -->
@@ -146,7 +156,7 @@ interface HeroSlide {
           </div>
         </div>
 
-        <!-- Right Column: Product Showcase Synchronized Card -->
+        <!-- Right Column: Product Showcase Grid-Stacked Synchronized Cards -->
         <div class="lg:col-span-5 flex justify-center">
           <div class="relative w-full max-w-md">
             <!-- Glow Outline -->
@@ -155,85 +165,101 @@ interface HeroSlide {
               class="absolute -inset-1 bg-linear-to-r from-blue-500 to-indigo-500 rounded-3xl blur opacity-25 dark:opacity-30"
             ></div>
 
-            <!-- Synchronized Product Card -->
-
-            <div
-              class="relative bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-200 overflow-hidden"
-            >
-              @if (activeSlide().product) {
-                <div>
-                  <!-- Product Image Container (Full Width / Flush Top) -->
+            <!-- CSS Grid Overlay Product Card Stack -->
+            <div class="grid grid-cols-1 grid-rows-1 w-full">
+              @for (slide of slides(); track $index) {
+                <div
+                  class="col-start-1 row-start-1 transition-all duration-500 ease-in-out transform"
+                  [class.opacity-100]="$index === currentIndex()"
+                  [class.scale-100]="$index === currentIndex()"
+                  [class.pointer-events-auto]="$index === currentIndex()"
+                  [class.opacity-0]="$index !== currentIndex()"
+                  [class.scale-95]="$index !== currentIndex()"
+                  [class.pointer-events-none]="$index !== currentIndex()"
+                >
                   <div
-                    class="relative h-64 w-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden"
+                    class="bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-200 overflow-hidden"
                   >
-                    @if (getSlideImageUrl(activeSlide().product)) {
-                      <img
-                        [src]="getSlideImageUrl(activeSlide().product)"
-                        [alt]="activeSlide().product?.title || 'Product Image'"
-                        class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
-                        loading="eager"
-                      />
+                    @if (slide.product) {
+                      <div>
+                        <!-- Fixed Height Image Container -->
+                        <div
+                          class="relative h-64 w-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden"
+                        >
+                          @if (getSlideImageUrl(slide.product)) {
+                            <img
+                              [src]="getSlideImageUrl(slide.product)"
+                              [alt]="slide.product?.title || 'Product Image'"
+                              class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
+                              loading="eager"
+                            />
+                          } @else {
+                            <div class="text-slate-400 dark:text-slate-500 text-xs">
+                              Shopify Product Preview
+                            </div>
+                          }
+
+                          <span
+                            class="absolute top-3 right-3 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow z-10"
+                          >
+                            Top Pick #{{ $index + 1 }}
+                          </span>
+                        </div>
+
+                        <!-- Card Body Content with Fixed Text Height Boxes -->
+                        <div class="p-6 space-y-4">
+                          <div>
+                            <h3
+                              class="text-lg font-bold text-slate-900 dark:text-white line-clamp-1 h-7"
+                            >
+                              {{ slide.product?.title }}
+                            </h3>
+                            <p
+                              class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 h-9 mt-1 leading-relaxed"
+                            >
+                              {{ slide.product?.description }}
+                            </p>
+                          </div>
+
+                          <!-- Price & In-App Cart Action -->
+                          <div
+                            class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 transition-colors duration-200"
+                          >
+                            <div>
+                              <span class="text-xs text-slate-500 dark:text-slate-400 block"
+                                >Retail Price</span
+                              >
+                              <span class="text-2xl font-black text-slate-900 dark:text-white">
+                                {{
+                                  currencyService.formatPrice(
+                                    slide.product?.variants?.edges?.[0]?.node?.price
+                                  )
+                                }}
+                              </span>
+                            </div>
+
+                            <button
+                              (click)="addToCart(getVariantId(slide.product))"
+                              [disabled]="isAdding()"
+                              class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
+                            >
+                              {{ isAdding() ? 'Adding...' : 'Add to Cart' }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     } @else {
-                      <div class="text-slate-400 dark:text-slate-500 text-xs">
-                        Shopify Product Preview
+                      <!-- Skeleton Loader -->
+                      <div class="space-y-4 animate-pulse p-6">
+                        <div class="h-60 bg-slate-200 dark:bg-slate-700/50 rounded-xl w-full"></div>
+                        <div class="h-4 bg-slate-200 dark:bg-slate-700/50 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-200 dark:bg-slate-700/50 rounded w-1/2"></div>
+                        <div
+                          class="h-10 bg-slate-200 dark:bg-slate-700/50 rounded w-full mt-4"
+                        ></div>
                       </div>
                     }
-
-                    <span
-                      class="absolute top-3 right-3 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow z-10"
-                    >
-                      Top Pick #{{ currentIndex() + 1 }}
-                    </span>
                   </div>
-
-                  <!-- Card Body Content (Padded Section) -->
-                  <div class="p-6 space-y-4">
-                    <!-- Product Info -->
-                    <div>
-                      <h3 class="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
-                        {{ activeSlide().product?.title }}
-                      </h3>
-                      <p
-                        class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed"
-                      >
-                        {{ activeSlide().product?.description }}
-                      </p>
-                    </div>
-
-                    <!-- Price & In-App Cart Action -->
-                    <div
-                      class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 transition-colors duration-200"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 dark:text-slate-400 block"
-                          >Retail Price</span
-                        >
-                        <span class="text-2xl font-black text-slate-900 dark:text-white">
-                          {{
-                            currencyService.formatPrice(
-                              activeSlide().product?.variants?.edges?.[0]?.node?.price
-                            )
-                          }}
-                        </span>
-                      </div>
-
-                      <button
-                        (click)="addToCart(getVariantId(activeSlide().product))"
-                        [disabled]="isAdding()"
-                        class="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs px-5 py-3 rounded-lg shadow-md transition cursor-pointer"
-                      >
-                        {{ isAdding() ? 'Adding...' : 'Add to Cart' }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              } @else {
-                <!-- Skeleton Loader -->
-                <div class="space-y-4 animate-pulse p-6">
-                  <div class="h-60 bg-slate-200 dark:bg-slate-700/50 rounded-xl w-full"></div>
-                  <div class="h-4 bg-slate-200 dark:bg-slate-700/50 rounded w-3/4"></div>
-                  <div class="h-3 bg-slate-200 dark:bg-slate-700/50 rounded w-1/2"></div>
-                  <div class="h-10 bg-slate-200 dark:bg-slate-700/50 rounded w-full mt-4"></div>
                 </div>
               }
             </div>
@@ -261,7 +287,7 @@ export class HeroComponent implements OnInit, OnDestroy {
       headline: 'Practical Tools Designed to Make Daily Tasks',
       highlightText: 'Easier, Faster & Better.',
       description:
-        ' Discover a curated selection of electronics and accessories that enhance your home, office, and lifestyle with efficiency and style.',
+        'Discover a curated selection of electronics and accessories that enhance your home, office, and lifestyle with efficiency and style.',
     },
     {
       tagline: 'Premium Performance • Zero Hassle',

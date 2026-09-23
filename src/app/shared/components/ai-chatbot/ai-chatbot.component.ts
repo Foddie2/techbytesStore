@@ -24,9 +24,9 @@ import { AuthService } from '../../../core/services/auth';
           >
             Ask DigiTex AI
           </span>
-          <span
+          <!-- <span
             class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full animate-pulse"
-          ></span>
+          ></span> -->
         </button>
       } @else {
         <div

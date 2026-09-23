@@ -66,7 +66,7 @@ export interface CustomerOrder {
                 "
                 class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
               >
-                {{ authService.isLoggedIn() ? 'Google Authenticated' : 'Guest Account' }}
+                {{ authService.isLoggedIn() ? 'Authenticated' : 'Guest Account' }}
               </span>
             </div>
 
