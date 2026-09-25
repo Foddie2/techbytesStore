@@ -1,20 +1,46 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
-import { ProductsPageComponent } from './pages/products/products.component';
-import { TrackOrderComponent } from './pages/track-order/track-order.component';
-import { AccountComponent } from './pages/account/account.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'products', component: ProductsPageComponent },
-  { path: 'track-order', component: TrackOrderComponent },
-  { path: 'account', component: AccountComponent },
+  {
+    path: '',
+    loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent),
+    title: 'DigiTex | Home',
+  },
+  {
+    path: 'products',
+    loadComponent: () =>
+      import('./pages/products/products.component').then(
+        (m) => m.ProductsPageComponent || (m as any).ProductsComponent,
+      ),
+    title: 'Catalog | DigiTex',
+  },
+
+  // FIXED REDIRECT ROUTE: Removed loadComponent & title from this object
+  {
+    path: 'new-arrivals',
+    redirectTo: '/products?features=New_Arrivals',
+    pathMatch: 'full',
+  },
+
+  {
+    path: 'track-order',
+    loadComponent: () =>
+      import('./pages/track-order/track-order.component').then((m) => m.TrackOrderComponent),
+    title: 'Track Order | DigiTex',
+  },
+  {
+    path: 'account',
+    loadComponent: () =>
+      import('./pages/account/account.component').then((m) => m.AccountComponent),
+    title: 'Account | DigiTex',
+  },
   {
     path: 'privacy-policy',
     loadComponent: () =>
       import('./pages/privacy-policy/privacy-policy.component').then(
         (m) => m.PrivacyPolicyComponent,
       ),
+    title: 'Privacy Policy | DigiTex',
   },
   {
     path: 'terms-of-service',
@@ -22,7 +48,10 @@ export const routes: Routes = [
       import('./pages/terms-of-service/terms-of-service.component').then(
         (m) => m.TermsOfServiceComponent,
       ),
+    title: 'Terms of Service | DigiTex',
   },
   { path: 'cookie-policy', redirectTo: 'privacy-policy', pathMatch: 'full' },
+
+  // Catch-all Redirect to Home
   { path: '**', redirectTo: '' },
 ];

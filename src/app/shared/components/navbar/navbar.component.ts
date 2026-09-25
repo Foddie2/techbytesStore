@@ -229,7 +229,7 @@ import { AuthService } from '../../../core/services/auth';
                     routerLink="/account"
                     [queryParams]="{ tab: 'orders' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors animate-pulse duration-150"
                   >
                     <span class="material-symbols-outlined text-[20px] text-slate-400"
                       >local_shipping</span
@@ -241,7 +241,7 @@ import { AuthService } from '../../../core/services/auth';
                     routerLink="/account"
                     [queryParams]="{ tab: 'wishlist' }"
                     (click)="isAccountOpen.set(false)"
-                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
+                    class="flex items-center gap-3 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-blue-50/80 dark:hover:bg-slate-700/60 hover:text-blue-600 dark:hover:text-blue-400 transition-colors animate-pulse duration-150"
                   >
                     <span class="material-symbols-outlined text-[20px] text-slate-400"
                       >favorite</span
@@ -498,7 +498,8 @@ import { AuthService } from '../../../core/services/auth';
             All Products
           </a>
           <a
-            routerLink="/new-arrivals"
+            routerLink="/products"
+            [queryParams]="{ features: 'New_Arrivals' }"
             routerLinkActive="text-blue-600 dark:text-blue-400 font-bold"
             class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150"
           >

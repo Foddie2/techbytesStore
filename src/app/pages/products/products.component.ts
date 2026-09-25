@@ -440,7 +440,8 @@ export class ProductsPageComponent implements OnInit {
   pageTitle = signal<string>('All Products');
   activeFilter = signal<string>('');
   brandCollections = signal<BrandCollection[]>([]);
-
+  activeFeatureFilter = signal<string | null>(null);
+  products = signal<any[]>([]);
   selectedProduct = signal<Product | null>(null);
   activeImageIndex = signal<number>(0);
   isModalAdding = signal<boolean>(false);
@@ -452,18 +453,28 @@ export class ProductsPageComponent implements OnInit {
     return images[this.activeImageIndex()] || images[0] || null;
   });
 
-  async ngOnInit(): Promise<void> {
-    try {
-      const data = await this.shopifyService.getProducts(36);
-      this.allProducts.set(data || []);
+  ngOnInit(): void {
+    // Listen dynamically to query parameters (e.g. ?features=New_Arrivals)
+    this.route.queryParams.subscribe((params) => {
+      const feature = params['features'];
+      this.activeFeatureFilter.set(feature || null);
+      this.loadProducts(feature);
+    });
+  }
 
-      this.route.queryParams.subscribe((params) => {
-        const cat = params['category'];
-        const q = params['q'];
-        this.applyFilterAndGroup(cat, q);
-      });
+  async loadProducts(featureFilter?: string): Promise<void> {
+    this.isLoading.set(true);
+    try {
+      const allProducts = await this.shopifyService.getProducts(20);
+
+      if (featureFilter === 'New_Arrivals') {
+        // Filter or sort by newest items
+        this.products.set([...allProducts].reverse());
+      } else {
+        this.products.set(allProducts);
+      }
     } catch (err) {
-      console.error('Failed to load products page catalog:', err);
+      console.error('Failed to load products catalog:', err);
     } finally {
       this.isLoading.set(false);
     }
